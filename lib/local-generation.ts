@@ -19,24 +19,40 @@ const FINAL_SIZES: Record<CreativeFormat, { width: number; height: number }> = {
   LINKEDIN_BANNER:  { width: 1584, height: 528  },
 }
 
+// Free fallback: Pollinations.ai — no API key required
+async function generateViaPollinations(prompt: string, width: number, height: number): Promise<Buffer> {
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&nologo=true&model=flux&seed=${Math.floor(Math.random() * 99999)}`
+  const res = await fetch(url, { signal: AbortSignal.timeout(120_000) })
+  if (!res.ok) throw new Error(`Pollinations returned ${res.status}`)
+  return Buffer.from(await res.arrayBuffer())
+}
+
 export async function runLocalGeneration(creativeId: string, format: CreativeFormat, prompt: string) {
   try {
     await prisma.creative.update({ where: { id: creativeId }, data: { status: 'PROCESSING' } })
 
-    if (!openaiImages) throw new Error('OPENAI_API_KEY not configured — image generation requires a direct OpenAI key')
-
     const { width, height } = GENERATE_SIZES[format]
-    const response = await openaiImages.images.generate({
-      model: 'gpt-image-2',
-      prompt,
-      n: 1,
-      size: `${width}x${height}` as any,
-      response_format: 'b64_json',
-    })
-    const b64 = response.data?.[0]?.b64_json
-    if (!b64) throw new Error('No image data returned from OpenAI')
+    let rawBuffer: Buffer
 
-    let pipeline = sharp(Buffer.from(b64, 'base64'))
+    if (openaiImages) {
+      // Primary: gpt-image-2 via direct OpenAI key
+      const response = await openaiImages.images.generate({
+        model: 'gpt-image-2',
+        prompt,
+        n: 1,
+        size: `${width}x${height}` as any,
+        response_format: 'b64_json',
+      })
+      const b64 = response.data?.[0]?.b64_json
+      if (!b64) throw new Error('No image data returned from OpenAI')
+      rawBuffer = Buffer.from(b64, 'base64')
+    } else {
+      // Fallback: Pollinations.ai (free, no API key needed)
+      console.log(`[local-generation] No OPENAI_API_KEY — using Pollinations.ai for ${creativeId}`)
+      rawBuffer = await generateViaPollinations(prompt, width, height)
+    }
+
+    let pipeline = sharp(rawBuffer)
     const final = FINAL_SIZES[format]
     const gen = GENERATE_SIZES[format]
 
