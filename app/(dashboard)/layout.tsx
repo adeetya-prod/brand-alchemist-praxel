@@ -1,4 +1,5 @@
 import { getCurrentUser } from '@/lib/dal'
+import { BRAND_SPACES } from '@/lib/copy'
 import { redirect } from 'next/navigation'
 import SignOutButton from '@/components/sign-out-button'
 
@@ -14,7 +15,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="flex items-center gap-8">
           <a href="/brands" className="text-xl font-bold text-brand-600 hover:text-brand-700">Brand Alchemist</a>
           <div className="flex items-center gap-6">
-            <a href="/brands" className="text-sm font-medium text-gray-600 hover:text-gray-900">Brands</a>
+            <a href="/brands" className="text-sm font-medium text-gray-600 hover:text-gray-900">{BRAND_SPACES}</a>
           </div>
         </div>
         <SignOutButton />

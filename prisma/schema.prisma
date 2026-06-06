@@ -6,20 +6,9 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id        String   @id @default(cuid())
-  clerkId   String   @unique
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  brands    Brand[]
-}
-
 model Brand {
   id             String           @id @default(cuid())
   userId         String
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   name           String
   description    String?
   tagline        String?
@@ -42,15 +31,15 @@ model Brand {
 }
 
 model BrandGuideline {
-  id          String          @id @default(cuid())
-  brandId     String
-  brand       Brand           @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  source      GuidelineSource
+  id           String          @id @default(cuid())
+  brandId      String
+  brand        Brand           @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  source       GuidelineSource
   openaiFileId String?
-  status      JobStatus       @default(PENDING)
+  status       JobStatus       @default(PENDING)
   extractedData Json?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   @@index([brandId])
 }
@@ -83,20 +72,26 @@ enum BrandAssetType {
 }
 
 model Creative {
-  id        String         @id @default(cuid())
-  brandId   String
-  brand     Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  format    CreativeFormat
-  prompt    String
-  url       String?
-  key       String?
-  status    JobStatus      @default(PENDING)
-  jobId     String?
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id               String         @id @default(cuid())
+  brandId          String
+  brand            Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  format           CreativeFormat
+  prompt           String
+  editedPrompt     String?
+  parentCreativeId String?
+  parent           Creative?      @relation("CreativeVariants", fields: [parentCreativeId], references: [id], onDelete: SetNull)
+  variants         Creative[]     @relation("CreativeVariants")
+  variantIndex     Int            @default(0)
+  url              String?
+  key              String?
+  status           JobStatus      @default(PENDING)
+  jobId            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   @@index([brandId])
   @@index([status])
+  @@index([parentCreativeId])
 }
 
 enum CreativeFormat {

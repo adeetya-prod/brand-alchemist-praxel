@@ -1,4 +1,5 @@
 import { getBrands } from '@/lib/db/brands'
+import { BRAND_SPACES } from '@/lib/copy'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -6,16 +7,16 @@ export default async function DashboardPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Your Brands</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Your {BRAND_SPACES}</h2>
         <Link href="/brands/new" className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 text-sm font-medium">
-          + New Brand
+          + New {BRAND_SPACES.slice(0, -1)}
         </Link>
       </div>
       {brands.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
-          <p className="text-gray-500 mb-4">No brands yet. Create your first brand identity.</p>
+          <p className="text-gray-500 mb-4">No {BRAND_SPACES.toLowerCase()} yet. Create your first brand identity.</p>
           <Link href="/brands/new" className="bg-brand-600 text-white px-6 py-3 rounded-lg hover:bg-brand-700 font-medium">
-            Create Brand
+            Create {BRAND_SPACES.slice(0, -1)}
           </Link>
         </div>
       ) : (

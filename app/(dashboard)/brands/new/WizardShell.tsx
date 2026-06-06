@@ -7,6 +7,7 @@ import Step3Typography from '@/components/brand-wizard/Step3Typography'
 import Step4Tone from '@/components/brand-wizard/Step4Tone'
 import Step5Submit from '@/components/brand-wizard/Step5Submit'
 import { createBrand } from '@/app/actions/brand'
+import { BRAND_SPACE } from '@/lib/copy'
 
 type WizardState = {
   name: string
@@ -69,7 +70,7 @@ export default function WizardShell() {
   return (
     <div className="max-w-xl mx-auto">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Create Your Brand</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Create Your {BRAND_SPACE}</h2>
         <div className="flex items-center gap-2">
           {STEPS.map((label, i) => (
             <div key={i} className="flex items-center gap-2">
