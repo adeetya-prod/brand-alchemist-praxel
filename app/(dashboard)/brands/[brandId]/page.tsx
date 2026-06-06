@@ -158,6 +158,12 @@ export default async function BrandProfilePage({ params }: { params: Promise<{ b
         )}
       </section>
 
+      {/* Creatives link */}
+      <Link href={`/brands/${brandId}/creatives`} className="block bg-white rounded-xl border border-gray-200 p-6 hover:border-indigo-200 hover:shadow-sm transition-all text-center">
+        <p className="font-medium text-gray-800">View All Creatives</p>
+        <p className="text-sm text-gray-500 mt-1">See your generated social media assets</p>
+      </Link>
+
       {/* Generate Creative CTA */}
       <div className="flex justify-end">
         <Link href={`/brands/${brandId}/creatives/new`} className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 font-medium">
