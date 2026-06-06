@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brands    Brand[]
+}
+
+model Brand {
+  id             String           @id @default(cuid())
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?
+  tagline        String?
+  primaryColor   String?
+  secondaryColor String?
+  accentColor    String?
+  logoUrl        String?
+  fontHeading    String?
+  fontBody       String?
+  tone           String[]
+  voiceGuide     String?
+  sourceUrl      String?
+  guidelines     BrandGuideline[]
+  assets         BrandAsset[]
+  creatives      Creative[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([userId])
+}
+
+model BrandGuideline {
+  id          String          @id @default(cuid())
+  brandId     String
+  brand       Brand           @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  source      GuidelineSource
+  openaiFileId String?
+  status      JobStatus       @default(PENDING)
+  extractedData Json?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([brandId])
+}
+
+enum GuidelineSource {
+  PDF
+  WEBSITE
+  STRUCTURED
+}
+
+model BrandAsset {
+  id        String         @id @default(cuid())
+  brandId   String
+  brand     Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  type      BrandAssetType
+  url       String
+  key       String
+  mimeType  String
+  sizeBytes Int
+  createdAt DateTime       @default(now())
+
+  @@index([brandId])
+}
+
+enum BrandAssetType {
+  LOGO
+  FONT
+  PDF_GUIDELINES
+  REFERENCE_IMAGE
+}
+
+model Creative {
+  id        String         @id @default(cuid())
+  brandId   String
+  brand     Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  format    CreativeFormat
+  prompt    String
+  url       String?
+  key       String?
+  status    JobStatus      @default(PENDING)
+  jobId     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([brandId])
+  @@index([status])
+}
+
+enum CreativeFormat {
+  INSTAGRAM_SQUARE
+  INSTAGRAM_STORY
+  LINKEDIN_POST
+  LINKEDIN_BANNER
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
