@@ -9,6 +9,8 @@ type BrandWithRelations = Awaited<ReturnType<typeof getBrand>> & {
   guidelines: BrandGuideline[]
 }
 
+const CARD = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)' }
+
 export default async function BrandProfilePage({ params }: { params: Promise<{ brandId: string }> }) {
   const { brandId } = await params
   let brand: BrandWithRelations
@@ -20,71 +22,102 @@ export default async function BrandProfilePage({ params }: { params: Promise<{ b
 
   const hasCompletedGuideline = brand.guidelines?.some(g => g.status === 'COMPLETED')
 
-  // Check for extraction results awaiting user review
   const pendingReview = await prisma.brandGuideline.findFirst({
     where: { brandId, status: 'COMPLETED', extractedData: { not: null } } as any,
     orderBy: { updatedAt: 'desc' },
     select: { id: true },
   })
 
+  const primary = brand.primaryColor || '#7C3AED'
+  const secondary = brand.secondaryColor || '#4C1D95'
+
   return (
-    <div className="max-w-3xl space-y-8">
+    <div className="max-w-3xl space-y-6">
       {/* Pending extraction review banner */}
       {pendingReview && (
-        <div className="flex items-center justify-between bg-brand-50 border border-brand-200 rounded-xl px-5 py-3">
+        <div
+          className="flex items-center justify-between rounded-xl px-5 py-3"
+          style={{ background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.3)' }}
+        >
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-brand-600 animate-pulse" />
-            <p className="text-sm font-medium text-brand-800">
-              You have extracted brand data awaiting review.
-            </p>
+            <div className="w-2 h-2 rounded-full bg-brand-400 animate-pulse" />
+            <p className="text-sm font-medium text-brand-300">Extracted brand data is awaiting your review.</p>
           </div>
-          <Link
-            href={`/brands/new/upload?brandId=${brandId}`}
-            className="text-xs font-semibold text-brand-700 hover:text-brand-900 underline"
-          >
+          <Link href={`/brands/new/upload?brandId=${brandId}`} className="text-xs font-semibold text-brand-300 hover:text-white transition-colors">
             Review now →
           </Link>
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            {brand.primaryColor && (
-              <div className="w-8 h-8 rounded-full border border-gray-200" style={{ backgroundColor: brand.primaryColor }} />
-            )}
-            <h2 className="text-2xl font-bold text-gray-900">{brand.name}</h2>
+      {/* Hero header */}
+      <div className="rounded-2xl overflow-hidden" style={CARD}>
+        <div className="h-32 w-full" style={{ background: `linear-gradient(135deg, ${primary}, ${secondary})` }} />
+        <div className="px-6 py-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-white">{brand.name}</h1>
+              {brand.tagline && <p className="text-white/50 mt-0.5">{brand.tagline}</p>}
+            </div>
+            <div className="flex gap-2 mt-1">
+              <Link
+                href={`/brands/${brandId}/edit`}
+                className="text-xs px-3 py-1.5 rounded-lg font-medium text-white/60 hover:text-white transition-colors"
+                style={{ border: '1px solid rgba(255,255,255,0.15)' }}
+              >
+                Edit
+              </Link>
+              <Link
+                href={`/brands/new/upload?brandId=${brandId}`}
+                className="text-xs px-3 py-1.5 rounded-lg font-medium text-brand-300 hover:text-white transition-colors"
+                style={{ border: '1px solid rgba(124,58,237,0.4)', background: 'rgba(124,58,237,0.1)' }}
+              >
+                Import Guidelines
+              </Link>
+            </div>
           </div>
-          {brand.tagline && <p className="text-gray-500 ml-11">{brand.tagline}</p>}
         </div>
-        <div className="flex gap-2">
-          <Link href={`/brands/${brandId}/edit`} className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm font-medium">
-            Edit
-          </Link>
-          <Link href={`/brands/new/upload?brandId=${brandId}`} className="border border-brand-200 text-brand-600 px-4 py-2 rounded-lg hover:bg-brand-50 text-sm font-medium">
-            Import Guidelines
-          </Link>
-          <Link href={`/brands/${brandId}/creatives/new`} className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 text-sm font-medium">
-            Generate Creative
-          </Link>
-        </div>
+      </div>
+
+      {/* Quick actions */}
+      <div className="grid grid-cols-2 gap-4">
+        <Link
+          href={`/brands/${brandId}/creatives/new`}
+          className="rounded-2xl p-5 flex items-center gap-4 group transition-all hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.15), rgba(255,107,107,0.1))', border: '1px solid rgba(124,58,237,0.25)' }}
+        >
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: 'rgba(124,58,237,0.25)' }}>✨</div>
+          <div>
+            <p className="font-semibold text-white text-sm">Generate Creative</p>
+            <p className="text-xs text-white/45 mt-0.5">Instagram, LinkedIn &amp; more</p>
+          </div>
+        </Link>
+        <Link
+          href={`/brands/${brandId}/creatives`}
+          className="rounded-2xl p-5 flex items-center gap-4 group transition-all hover:-translate-y-0.5"
+          style={CARD}
+        >
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: 'rgba(255,255,255,0.08)' }}>🖼</div>
+          <div>
+            <p className="font-semibold text-white text-sm">Creative Library</p>
+            <p className="text-xs text-white/45 mt-0.5">View all generated assets</p>
+          </div>
+        </Link>
       </div>
 
       {/* Colors */}
       {(brand.primaryColor || brand.secondaryColor || brand.accentColor) && (
-        <section className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Brand Colors</h3>
-          <div className="flex gap-4">
+        <section className="rounded-2xl p-6" style={CARD}>
+          <h3 className="font-semibold text-white/70 text-sm uppercase tracking-wide mb-4">Brand Colors</h3>
+          <div className="flex gap-5">
             {[
               { label: 'Primary', color: brand.primaryColor },
               { label: 'Secondary', color: brand.secondaryColor },
               { label: 'Accent', color: brand.accentColor },
             ].filter(c => c.color).map(({ label, color }) => (
               <div key={label} className="text-center">
-                <div className="w-16 h-16 rounded-xl border border-gray-200 mb-2" style={{ backgroundColor: color! }} />
-                <p className="text-xs text-gray-500">{label}</p>
-                <p className="text-xs font-mono text-gray-700">{color}</p>
+                <div className="w-14 h-14 rounded-xl mb-2" style={{ backgroundColor: color!, border: '1px solid rgba(255,255,255,0.15)' }} />
+                <p className="text-xs text-white/40">{label}</p>
+                <p className="text-xs font-mono text-white/65">{color}</p>
               </div>
             ))}
           </div>
@@ -93,19 +126,19 @@ export default async function BrandProfilePage({ params }: { params: Promise<{ b
 
       {/* Typography */}
       {(brand.fontHeading || brand.fontBody) && (
-        <section className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Typography</h3>
+        <section className="rounded-2xl p-6" style={CARD}>
+          <h3 className="font-semibold text-white/70 text-sm uppercase tracking-wide mb-4">Typography</h3>
           <div className="grid grid-cols-2 gap-4">
             {brand.fontHeading && (
               <div>
-                <p className="text-xs text-gray-500 mb-1">Heading</p>
-                <p className="font-medium text-gray-800">{brand.fontHeading}</p>
+                <p className="text-xs text-white/40 mb-1">Heading</p>
+                <p className="font-medium text-white">{brand.fontHeading}</p>
               </div>
             )}
             {brand.fontBody && (
               <div>
-                <p className="text-xs text-gray-500 mb-1">Body</p>
-                <p className="font-medium text-gray-800">{brand.fontBody}</p>
+                <p className="text-xs text-white/40 mb-1">Body</p>
+                <p className="font-medium text-white">{brand.fontBody}</p>
               </div>
             )}
           </div>
@@ -113,34 +146,83 @@ export default async function BrandProfilePage({ params }: { params: Promise<{ b
       )}
 
       {/* Tone */}
-      {brand.tone && brand.tone.length > 0 && (
-        <section className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Tone & Voice</h3>
+      {brand.tone && (brand.tone as string[]).length > 0 && (
+        <section className="rounded-2xl p-6" style={CARD}>
+          <h3 className="font-semibold text-white/70 text-sm uppercase tracking-wide mb-4">Tone & Voice</h3>
           <div className="flex flex-wrap gap-2 mb-4">
             {(brand.tone as string[]).map(t => (
-              <span key={t} className="px-3 py-1 rounded-full text-sm bg-brand-50 text-brand-700 border border-brand-100">
+              <span
+                key={t}
+                className="px-3 py-1 rounded-full text-sm"
+                style={{ background: 'rgba(124,58,237,0.2)', color: '#C4B5FD', border: '1px solid rgba(124,58,237,0.3)' }}
+              >
                 {t}
               </span>
             ))}
           </div>
           {brand.voiceGuide && (
-            <p className="text-sm text-gray-600 italic border-l-2 border-brand-200 pl-3">{brand.voiceGuide}</p>
+            <p className="text-sm text-white/50 italic leading-relaxed"
+               style={{ borderLeft: '2px solid rgba(124,58,237,0.4)', paddingLeft: '12px' }}>
+              {brand.voiceGuide}
+            </p>
           )}
         </section>
       )}
 
+      {/* Guidelines */}
+      <section className="rounded-2xl p-6" style={CARD}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-white/70 text-sm uppercase tracking-wide">Brand Guidelines</h3>
+          <Link href={`/brands/new/upload?brandId=${brandId}`} className="text-xs text-brand-400 hover:text-brand-300 transition-colors font-medium">
+            + Import
+          </Link>
+        </div>
+        {!brand.guidelines || brand.guidelines.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-sm text-white/35 mb-4">No guidelines imported yet.</p>
+            <Link
+              href={`/brands/new/upload?brandId=${brandId}`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white"
+              style={{ background: 'linear-gradient(135deg, #7C3AED, #FF6B6B)' }}
+            >
+              Import Guidelines
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {brand.guidelines.map(g => {
+              const statusStyle = {
+                PENDING: { color: 'rgba(255,255,255,0.45)', background: 'rgba(255,255,255,0.07)' },
+                PROCESSING: { color: '#93C5FD', background: 'rgba(59,130,246,0.15)' },
+                COMPLETED: { color: '#86EFAC', background: 'rgba(34,197,94,0.15)' },
+                FAILED: { color: '#FCA5A5', background: 'rgba(239,68,68,0.15)' },
+              }[g.status] || { color: 'rgba(255,255,255,0.45)', background: 'rgba(255,255,255,0.07)' }
+              return (
+                <div key={g.id} className="flex items-center justify-between py-2.5 px-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                  <div>
+                    <p className="text-sm font-medium text-white/80">{g.source}</p>
+                    <p className="text-xs text-white/35">{new Date(g.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <span className="text-xs px-2 py-1 rounded-full font-medium" style={statusStyle}>{g.status}</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </section>
+
       {/* Assets */}
       {brand.assets && brand.assets.length > 0 && (
-        <section className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Assets</h3>
+        <section className="rounded-2xl p-6" style={CARD}>
+          <h3 className="font-semibold text-white/70 text-sm uppercase tracking-wide mb-4">Assets</h3>
           <div className="space-y-2">
             {brand.assets.map(asset => (
-              <div key={asset.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+              <div key={asset.id} className="flex items-center justify-between py-2.5 px-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>
                 <div>
-                  <p className="text-sm font-medium text-gray-800">{asset.type}</p>
-                  <p className="text-xs text-gray-400">{asset.mimeType} &middot; {Math.round(asset.sizeBytes / 1024)} KB</p>
+                  <p className="text-sm font-medium text-white/80">{asset.type}</p>
+                  <p className="text-xs text-white/35">{asset.mimeType} · {Math.round(asset.sizeBytes / 1024)} KB</p>
                 </div>
-                <a href={asset.url} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-600 hover:text-brand-700 font-medium">
+                <a href={asset.url} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-400 hover:text-brand-300 font-medium transition-colors">
                   View
                 </a>
               </div>
@@ -148,60 +230,6 @@ export default async function BrandProfilePage({ params }: { params: Promise<{ b
           </div>
         </section>
       )}
-
-      {/* Guidelines */}
-      <section className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-800">Brand Guidelines</h3>
-          <Link href={`/brands/new/upload?brandId=${brandId}`} className="text-sm text-brand-600 hover:text-brand-700 font-medium">
-            + Import
-          </Link>
-        </div>
-        {!brand.guidelines || brand.guidelines.length === 0 ? (
-          <p className="text-sm text-gray-500">No guidelines imported yet.</p>
-        ) : (
-          <div className="space-y-3">
-            {brand.guidelines.map(g => {
-              const statusColor = {
-                PENDING: 'bg-gray-100 text-gray-600',
-                PROCESSING: 'bg-blue-100 text-blue-700',
-                COMPLETED: 'bg-green-100 text-green-700',
-                FAILED: 'bg-red-100 text-red-600',
-              }[g.status]
-              return (
-                <div key={g.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">{g.source}</p>
-                    <p className="text-xs text-gray-400">{new Date(g.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColor}`}>{g.status}</span>
-                </div>
-              )
-            })}
-          </div>
-        )}
-        {!hasCompletedGuideline && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <p className="text-sm text-gray-500 mb-3">Import your brand guidelines to unlock AI-powered creative generation.</p>
-            <Link href={`/brands/new/upload?brandId=${brandId}`} className="inline-block bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 text-sm font-medium">
-              Import Guidelines
-            </Link>
-          </div>
-        )}
-      </section>
-
-      {/* Creatives link */}
-      <Link href={`/brands/${brandId}/creatives`} className="block bg-white rounded-xl border border-gray-200 p-6 hover:border-brand-200 hover:shadow-sm transition-all text-center">
-        <p className="font-medium text-gray-800">View All Creatives</p>
-        <p className="text-sm text-gray-500 mt-1">See your generated social media assets</p>
-      </Link>
-
-      {/* Generate Creative CTA */}
-      <div className="flex justify-end">
-        <Link href={`/brands/${brandId}/creatives/new`} className="bg-brand-600 text-white px-6 py-3 rounded-lg hover:bg-brand-700 font-medium">
-          Generate Creative
-        </Link>
-      </div>
     </div>
   )
 }

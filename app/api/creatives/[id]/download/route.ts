@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GetObjectCommand } from '@aws-sdk/client-s3'
-import { r2, R2_BUCKET } from '@/lib/r2'
+import { getAssetBuffer } from '@/lib/storage'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/dal'
 
@@ -27,11 +26,7 @@ export async function GET(
       return new NextResponse('Creative not ready', { status: 409 })
     }
 
-    const obj = await r2.send(new GetObjectCommand({ Bucket: R2_BUCKET, Key: creative.key }))
-    const body = obj.Body
-    if (!body) return new NextResponse('Storage error', { status: 500 })
-
-    const buffer = Buffer.from(await body.transformToByteArray())
+    const buffer = await getAssetBuffer(creative.key)
 
     let outputBuffer: Buffer
     let contentType: string

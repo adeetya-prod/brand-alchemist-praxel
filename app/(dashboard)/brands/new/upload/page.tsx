@@ -4,30 +4,36 @@ import UploadTabsClient from '@/components/upload/UploadTabsClient'
 export default async function UploadGuidelinesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ brandId?: string }>
+  searchParams: Promise<{ brandId?: string; tab?: string }>
 }) {
-  const { brandId } = await searchParams
+  const { brandId, tab } = await searchParams
+  const initialTab = tab ? parseInt(tab, 10) : 0
+
   if (!brandId) {
     return (
-      <div className="max-w-xl mx-auto text-center py-12">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Upload Brand Guidelines</h2>
-        <p className="text-gray-500 mb-4">
-          First create a brand, then you can upload or import your existing guidelines.
-        </p>
+      <div className="max-w-xl mx-auto text-center py-16">
+        <p className="text-4xl mb-6">🧪</p>
+        <h2 className="text-2xl font-bold text-white mb-3">Create a brand first</h2>
+        <p className="text-white/50 mb-8">You need a brand space before you can import guidelines.</p>
         <Link
           href="/brands/new"
-          className="inline-block bg-brand-600 text-white px-6 py-2 rounded-lg hover:bg-brand-700"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white"
+          style={{ background: 'linear-gradient(135deg, #7C3AED, #FF6B6B)' }}
         >
-          Create Brand First
+          Create Brand Space
         </Link>
       </div>
     )
   }
+
   return (
     <div className="max-w-xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Import Brand Guidelines</h2>
-      <p className="text-gray-500 mb-8">Choose how you want to import your existing brand identity.</p>
-      <UploadTabsClient brandId={brandId} />
+      <Link href="/brands" className="flex items-center gap-2 text-sm text-white/45 hover:text-white/80 mb-8 transition-colors">
+        ← Brand Spaces
+      </Link>
+      <h2 className="text-2xl font-bold text-white mb-2">Import Brand Guidelines</h2>
+      <p className="text-white/50 mb-8">Choose how you want to import your existing brand identity.</p>
+      <UploadTabsClient brandId={brandId} initialTab={initialTab} />
     </div>
   )
 }

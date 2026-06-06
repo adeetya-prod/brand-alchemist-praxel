@@ -31,13 +31,12 @@ export default function Step2Colors({ values, onChange }: Props) {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="font-semibold text-gray-800 mb-1">Brand Colors</h3>
-        <p className="text-xs text-gray-400">Tip: Your primary color should be the most recognizable — it appears on buttons and headlines.</p>
+        <h3 className="font-semibold text-white mb-0.5">Brand Colors</h3>
+        <p className="text-xs text-white/40">Your primary color is the most recognizable — it appears on buttons and headlines.</p>
       </div>
 
-      {/* Preset palette strips */}
       <div>
-        <p className="text-xs font-medium text-gray-500 mb-2">Quick presets</p>
+        <p className="text-xs font-medium text-white/45 mb-2">Quick presets</p>
         <div className="flex flex-wrap gap-2">
           {PRESETS.map(p => (
             <button
@@ -45,41 +44,43 @@ export default function Step2Colors({ values, onChange }: Props) {
               type="button"
               onClick={() => applyPreset(p.colors)}
               title={p.name}
-              className="flex items-center gap-0.5 p-1 rounded-lg border border-gray-200 hover:border-brand-400 transition-colors"
+              className="flex items-center gap-0.5 p-1.5 rounded-lg transition-colors"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
             >
               {p.colors.map((c, i) => (
                 <div key={i} className="w-5 h-5 rounded-sm" style={{ backgroundColor: c }} />
               ))}
-              <span className="text-xs text-gray-500 ml-1.5 pr-1">{p.name}</span>
+              <span className="text-xs text-white/40 ml-1.5 pr-0.5">{p.name}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Color pickers */}
       {FIELDS.map(({ label, key, required, hint }) => (
         <div key={key}>
-          <label className="block text-sm font-medium text-gray-700 mb-0.5">
-            {label} {required && <span className="text-red-500">*</span>}
+          <label className="block text-sm font-medium text-white/70 mb-0.5">
+            {label} {required && <span className="text-[#FF6B6B]">*</span>}
           </label>
-          <p className="text-xs text-gray-400 mb-1.5">{hint}</p>
+          <p className="text-xs text-white/35 mb-2">{hint}</p>
           <div className="flex items-center gap-3">
             <input
               type="color"
               value={values[key] || '#ffffff'}
               onChange={e => onChange({ [key]: e.target.value })}
-              className="w-10 h-10 rounded cursor-pointer border border-gray-200"
+              className="w-10 h-10 rounded-lg cursor-pointer"
+              style={{ border: '1px solid rgba(255,255,255,0.15)' }}
             />
             <input
               type="text"
               value={values[key] || ''}
               onChange={e => onChange({ [key]: e.target.value })}
-              placeholder="#6366f1"
+              placeholder="#7C3AED"
               maxLength={7}
-              className="w-32 border border-gray-300 rounded-lg px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-32 px-3 py-2 rounded-lg font-mono text-sm text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}
             />
             {values[key] && (
-              <div className="w-8 h-8 rounded border border-gray-200" style={{ backgroundColor: values[key] }} />
+              <div className="w-8 h-8 rounded-lg" style={{ backgroundColor: values[key], border: '1px solid rgba(255,255,255,0.15)' }} />
             )}
           </div>
         </div>

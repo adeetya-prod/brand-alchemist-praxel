@@ -6,6 +6,7 @@ import { getCurrentUser } from '@/lib/dal'
 import { getBrand } from '@/lib/db/brands'
 import { buildPrompt } from '@/lib/prompts'
 import type { CreativeFormat } from '@prisma/client'
+import { after } from 'next/server'
 
 const FORMAT_VALUES = ['INSTAGRAM_SQUARE', 'INSTAGRAM_STORY', 'LINKEDIN_POST', 'LINKEDIN_BANNER'] as const
 
@@ -79,6 +80,18 @@ export async function requestBatchCreativeGeneration(input: z.infer<typeof Batch
     }))
   )
 
+  // When Inngest is in local/dev mode without a dev server, run generation directly
+  // after the response is sent so the user isn't blocked waiting
+  if (!process.env.INNGEST_EVENT_KEY || process.env.INNGEST_EVENT_KEY === 'local') {
+    const rowSnapshot = rows.map(r => ({ id: r.id, format: r.format as CreativeFormat, prompt: r.prompt }))
+    after(async () => {
+      const { runLocalGeneration } = await import('@/lib/local-generation')
+      for (const row of rowSnapshot) {
+        await runLocalGeneration(row.id, row.format, row.prompt)
+      }
+    })
+  }
+
   return { brandId, count: rows.length }
 }
 
@@ -128,6 +141,15 @@ export async function editCreativePrompt(creativeId: string, newPrompt: string) 
     name: 'creative/generate.requested',
     data: { creativeId: newCreative.id, brandId: original.brandId, format: original.format, prompt: newPrompt },
   })
+
+  if (!process.env.INNGEST_EVENT_KEY || process.env.INNGEST_EVENT_KEY === 'local') {
+    const id = newCreative.id
+    const fmt = original.format as CreativeFormat
+    after(async () => {
+      const { runLocalGeneration } = await import('@/lib/local-generation')
+      await runLocalGeneration(id, fmt, newPrompt)
+    })
+  }
 
   return { newCreativeId: newCreative.id, brandId: original.brandId }
 }

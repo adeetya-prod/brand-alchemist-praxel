@@ -47,37 +47,43 @@ export default function Step4Tone({ values, onChange }: Props) {
   }, [values, onChange])
 
   return (
-    <div className="space-y-4">
-      <h3 className="font-semibold text-gray-800">Tone & Voice</h3>
-      <p className="text-sm text-gray-500">Select up to 5 keywords that describe your brand's personality.</p>
+    <div className="space-y-5">
+      <div>
+        <h3 className="font-semibold text-white mb-0.5">Tone & Voice</h3>
+        <p className="text-sm text-white/40">Select up to 5 keywords that describe your brand's personality.</p>
+      </div>
       <div className="flex flex-wrap gap-2">
         {TONE_OPTIONS.map(keyword => {
           const selected = values.tone.includes(keyword)
           return (
             <button key={keyword} type="button" onClick={() => toggleTone(keyword)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${selected ? 'bg-brand-600 text-white border-brand-600' : 'border-gray-300 text-gray-700 hover:border-brand-400'}`}>
+              className="px-3.5 py-1.5 rounded-full text-sm font-medium transition-all"
+              style={selected
+                ? { background: 'rgba(124,58,237,0.3)', color: '#C4B5FD', border: '1px solid rgba(124,58,237,0.5)' }
+                : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.1)' }
+              }>
               {keyword}
             </button>
           )
         })}
       </div>
       {values.tone.length > 0 && (
-        <div className="bg-brand-50 rounded-lg border border-brand-100 p-3 text-xs text-brand-700 space-y-1">
+        <div className="rounded-xl p-4 text-xs space-y-1.5" style={{ background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)' }}>
           {values.tone.slice(0, 2).map(k => TONE_EXAMPLES[k] && (
-            <p key={k}><span className="font-semibold capitalize">{k}:</span> {TONE_EXAMPLES[k]}</p>
+            <p key={k} className="text-white/65"><span className="font-semibold capitalize text-brand-300">{k}:</span> {TONE_EXAMPLES[k]}</p>
           ))}
         </div>
       )}
       {values.tone.length >= 2 && (
         <button type="button" onClick={refineVoice} disabled={isPending}
-          className="text-sm text-brand-600 hover:text-brand-700 font-medium disabled:opacity-50">
-          {isPending ? 'Generating voice guide...' : '✨ Refine with AI'}
+          className="text-sm text-brand-400 hover:text-brand-300 font-medium disabled:opacity-50 transition-colors">
+          {isPending ? '✨ Generating voice guide…' : '✨ Refine with AI'}
         </button>
       )}
       {values.voiceGuide && (
-        <div className="mt-3 p-4 bg-brand-50 rounded-lg border border-brand-100">
-          <p className="text-sm font-medium text-brand-800 mb-1">Brand Voice Guide</p>
-          <p className="text-sm text-gray-700">{values.voiceGuide}</p>
+        <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <p className="text-sm font-medium text-white/70 mb-1.5">Brand Voice Guide</p>
+          <p className="text-sm text-white/60 leading-relaxed">{values.voiceGuide}</p>
         </div>
       )}
     </div>
