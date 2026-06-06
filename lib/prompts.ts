@@ -18,31 +18,36 @@ const FORMAT_SIZE: Record<CreativeFormat, string> = {
   LINKEDIN_BANNER: "1584x528",
 };
 
+export function buildBrandSystemContext(brand: Brand): string {
+  const parts: string[] = []
+  if (brand.primaryColor) parts.push(`Brand primary color: ${brand.primaryColor}.`)
+  if (brand.secondaryColor) parts.push(`Secondary color: ${brand.secondaryColor}.`)
+  if (brand.accentColor) parts.push(`Accent color: ${brand.accentColor}.`)
+  if (parts.length > 0) parts.push('Use ONLY these colors. Do not introduce colors not listed above.')
+  if (brand.tone.length > 0) parts.push(`Brand tone: ${brand.tone.join(', ')}.`)
+  if (brand.voiceGuide) parts.push(`Brand mood: ${brand.voiceGuide.slice(0, 150)}.`)
+  return parts.join(' ')
+}
+
 export function buildPrompt(
   brand: Brand,
   format: CreativeFormat,
-  brief?: string
+  brief?: string,
+  variantIndex = 0
 ): string {
   const parts: string[] = [
     "Professional marketing creative, social media post.",
     FORMAT_CONTEXT[format],
     `Brand: ${brand.name}.`,
+    buildBrandSystemContext(brand),
   ];
 
-  if (brand.primaryColor) {
-    parts.push(`Primary color: ${brand.primaryColor}.`);
-  }
-  if (brand.secondaryColor) {
-    parts.push(`Secondary color: ${brand.secondaryColor}.`);
-  }
-  if (brand.tone.length > 0) {
-    parts.push(`Visual style: ${brand.tone.join(", ")}.`);
-  }
-  if (brand.voiceGuide) {
-    parts.push(`Brand feel: ${brand.voiceGuide.slice(0, 200)}.`);
-  }
   if (brief) {
     parts.push(`Content: ${brief}.`);
+  }
+
+  if (variantIndex === 1) {
+    parts.push("Alternative composition, different layout angle and framing than the first variant.");
   }
 
   parts.push(
@@ -50,7 +55,7 @@ export function buildPrompt(
     "Photorealistic, high quality, clean composition."
   );
 
-  return parts.join(" ");
+  return parts.filter(Boolean).join(" ");
 }
 
 export { FORMAT_SIZE };

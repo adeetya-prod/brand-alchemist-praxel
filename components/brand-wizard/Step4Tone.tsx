@@ -4,6 +4,19 @@ import { refineBrandVoiceFromInputs } from '@/app/actions/ai-refine'
 
 const TONE_OPTIONS = ['professional', 'friendly', 'bold', 'playful', 'luxurious', 'minimalist', 'energetic', 'trustworthy', 'innovative', 'authentic']
 
+const TONE_EXAMPLES: Record<string, string> = {
+  professional: '"Our team delivers measurable results, every time."',
+  friendly: '"Hey there! We\'re so glad you stopped by."',
+  bold: '"We don\'t follow trends. We set them."',
+  playful: '"We turned your boring Monday into a design party 🎉"',
+  luxurious: '"Experience the extraordinary, crafted just for you."',
+  minimalist: '"Less clutter. More clarity."',
+  energetic: '"Let\'s build something incredible — starting now."',
+  trustworthy: '"Trusted by over 10,000 brands worldwide."',
+  innovative: '"The future of creative is already here."',
+  authentic: '"Real stories, real people, real impact."',
+}
+
 type Props = {
   values: { tone: string[]; voiceGuide: string; name: string; description: string; tagline: string }
   onChange: (v: any) => void
@@ -48,6 +61,13 @@ export default function Step4Tone({ values, onChange }: Props) {
           )
         })}
       </div>
+      {values.tone.length > 0 && (
+        <div className="bg-brand-50 rounded-lg border border-brand-100 p-3 text-xs text-brand-700 space-y-1">
+          {values.tone.slice(0, 2).map(k => TONE_EXAMPLES[k] && (
+            <p key={k}><span className="font-semibold capitalize">{k}:</span> {TONE_EXAMPLES[k]}</p>
+          ))}
+        </div>
+      )}
       {values.tone.length >= 2 && (
         <button type="button" onClick={refineVoice} disabled={isPending}
           className="text-sm text-brand-600 hover:text-brand-700 font-medium disabled:opacity-50">
