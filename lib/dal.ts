@@ -1,8 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
-import { cache } from "react";
+import { createClient } from '@/lib/supabase/server'
+import { cache } from 'react'
 
 export const getCurrentUser = cache(async (): Promise<string> => {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  return userId;
-});
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+  return user.id
+})
