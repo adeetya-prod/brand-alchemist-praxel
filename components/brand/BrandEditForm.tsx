@@ -49,15 +49,15 @@ export default function BrandEditForm({ brand }: { brand: Brand }) {
         <h3 className="font-semibold text-gray-800">Identity</h3>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Brand Name <span className="text-red-500">*</span></label>
-          <input value={form.name} onChange={e => update({ name: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <input value={form.name} onChange={e => update({ name: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Tagline</label>
-          <input value={form.tagline} onChange={e => update({ tagline: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <input value={form.tagline} onChange={e => update({ tagline: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <textarea value={form.description} onChange={e => update({ description: e.target.value })} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <textarea value={form.description} onChange={e => update({ description: e.target.value })} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" />
         </div>
       </section>
 
@@ -69,7 +69,7 @@ export default function BrandEditForm({ brand }: { brand: Brand }) {
             <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
             <div className="flex items-center gap-3">
               <input type="color" value={form[key] || '#ffffff'} onChange={e => update({ [key]: e.target.value })} className="w-10 h-10 rounded cursor-pointer border border-gray-200" />
-              <input type="text" value={form[key]} onChange={e => update({ [key]: e.target.value })} placeholder="#6366f1" maxLength={7} className="w-32 border border-gray-300 rounded-lg px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <input type="text" value={form[key]} onChange={e => update({ [key]: e.target.value })} placeholder="#6366f1" maxLength={7} className="w-32 border border-gray-300 rounded-lg px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
               {form[key] && <div className="w-8 h-8 rounded border border-gray-200" style={{ backgroundColor: form[key] }} />}
             </div>
           </div>
@@ -82,11 +82,11 @@ export default function BrandEditForm({ brand }: { brand: Brand }) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Heading Font</label>
-            <input value={form.fontHeading} onChange={e => update({ fontHeading: e.target.value })} placeholder="Playfair Display" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <input value={form.fontHeading} onChange={e => update({ fontHeading: e.target.value })} placeholder="Playfair Display" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Body Font</label>
-            <input value={form.fontBody} onChange={e => update({ fontBody: e.target.value })} placeholder="Inter" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <input value={form.fontBody} onChange={e => update({ fontBody: e.target.value })} placeholder="Inter" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
           </div>
         </div>
       </section>
@@ -98,21 +98,21 @@ export default function BrandEditForm({ brand }: { brand: Brand }) {
           {TONE_OPTIONS.map(k => (
             <button key={k} type="button"
               onClick={() => update({ tone: form.tone.includes(k) ? form.tone.filter(t => t !== k) : form.tone.length < 5 ? [...form.tone, k] : form.tone })}
-              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${form.tone.includes(k) ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 text-gray-700 hover:border-indigo-400'}`}>
+              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${form.tone.includes(k) ? 'bg-brand-600 text-white border-brand-600' : 'border-gray-300 text-gray-700 hover:border-brand-400'}`}>
               {k}
             </button>
           ))}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Voice Guide</label>
-          <textarea value={form.voiceGuide} onChange={e => update({ voiceGuide: e.target.value })} rows={3} placeholder="Describe how your brand speaks..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <textarea value={form.voiceGuide} onChange={e => update({ voiceGuide: e.target.value })} rows={3} placeholder="Describe how your brand speaks..." className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" />
         </div>
       </section>
 
       {error && <p className="text-sm text-red-500">{error}</p>}
       <div className="flex gap-3">
         <button onClick={handleSave} disabled={saving || !form.name.trim()}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium">
+          className="bg-brand-600 text-white px-6 py-2 rounded-lg hover:bg-brand-700 disabled:opacity-50 font-medium">
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
         <button onClick={() => router.back()} className="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-50">

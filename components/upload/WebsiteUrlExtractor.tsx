@@ -39,13 +39,13 @@ export default function WebsiteUrlExtractor({ brandId }: { brandId: string }) {
             onChange={e => setUrl(e.target.value)}
             placeholder="https://yourwebsite.com"
             required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
           {error && <p className="text-sm text-red-500">{error}</p>}
           <button
             type="submit"
             disabled={loading || !url}
-            className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium"
+            className="w-full bg-brand-600 text-white py-2 rounded-lg hover:bg-brand-700 disabled:opacity-50 font-medium"
           >
             {loading ? 'Starting extraction...' : 'Scan Website'}
           </button>

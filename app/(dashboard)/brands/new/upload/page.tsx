@@ -16,7 +16,7 @@ export default async function UploadGuidelinesPage({
         </p>
         <Link
           href="/brands/new"
-          className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
+          className="inline-block bg-brand-600 text-white px-6 py-2 rounded-lg hover:bg-brand-700"
         >
           Create Brand First
         </Link>

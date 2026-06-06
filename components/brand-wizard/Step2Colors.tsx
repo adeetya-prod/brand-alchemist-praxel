@@ -32,7 +32,7 @@ export default function Step2Colors({ values, onChange }: Props) {
               onChange={e => onChange({ [key]: e.target.value })}
               placeholder="#6366f1"
               maxLength={7}
-              className="w-32 border border-gray-300 rounded-lg px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-32 border border-gray-300 rounded-lg px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
             {values[key] && (
               <div className="w-8 h-8 rounded border border-gray-200" style={{ backgroundColor: values[key] }} />

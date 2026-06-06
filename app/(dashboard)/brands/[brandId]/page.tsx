@@ -30,10 +30,10 @@ export default async function BrandProfilePage({ params }: { params: Promise<{ b
           <Link href={`/brands/${brandId}/edit`} className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm font-medium">
             Edit
           </Link>
-          <Link href={`/brands/new/upload?brandId=${brandId}`} className="border border-indigo-200 text-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-50 text-sm font-medium">
+          <Link href={`/brands/new/upload?brandId=${brandId}`} className="border border-brand-200 text-brand-600 px-4 py-2 rounded-lg hover:bg-brand-50 text-sm font-medium">
             Import Guidelines
           </Link>
-          <Link href={`/brands/${brandId}/creatives/new`} className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm font-medium">
+          <Link href={`/brands/${brandId}/creatives/new`} className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 text-sm font-medium">
             Generate Creative
           </Link>
         </div>
@@ -86,13 +86,13 @@ export default async function BrandProfilePage({ params }: { params: Promise<{ b
           <h3 className="font-semibold text-gray-800 mb-4">Tone & Voice</h3>
           <div className="flex flex-wrap gap-2 mb-4">
             {(brand.tone as string[]).map(t => (
-              <span key={t} className="px-3 py-1 rounded-full text-sm bg-indigo-50 text-indigo-700 border border-indigo-100">
+              <span key={t} className="px-3 py-1 rounded-full text-sm bg-brand-50 text-brand-700 border border-brand-100">
                 {t}
               </span>
             ))}
           </div>
           {brand.voiceGuide && (
-            <p className="text-sm text-gray-600 italic border-l-2 border-indigo-200 pl-3">{brand.voiceGuide}</p>
+            <p className="text-sm text-gray-600 italic border-l-2 border-brand-200 pl-3">{brand.voiceGuide}</p>
           )}
         </section>
       )}
@@ -108,7 +108,7 @@ export default async function BrandProfilePage({ params }: { params: Promise<{ b
                   <p className="text-sm font-medium text-gray-800">{asset.type}</p>
                   <p className="text-xs text-gray-400">{asset.mimeType} &middot; {Math.round(asset.sizeBytes / 1024)} KB</p>
                 </div>
-                <a href={asset.url} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+                <a href={asset.url} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-600 hover:text-brand-700 font-medium">
                   View
                 </a>
               </div>
@@ -121,7 +121,7 @@ export default async function BrandProfilePage({ params }: { params: Promise<{ b
       <section className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-gray-800">Brand Guidelines</h3>
-          <Link href={`/brands/new/upload?brandId=${brandId}`} className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+          <Link href={`/brands/new/upload?brandId=${brandId}`} className="text-sm text-brand-600 hover:text-brand-700 font-medium">
             + Import
           </Link>
         </div>
@@ -151,7 +151,7 @@ export default async function BrandProfilePage({ params }: { params: Promise<{ b
         {!hasCompletedGuideline && (
           <div className="mt-4 pt-4 border-t border-gray-100">
             <p className="text-sm text-gray-500 mb-3">Import your brand guidelines to unlock AI-powered creative generation.</p>
-            <Link href={`/brands/new/upload?brandId=${brandId}`} className="inline-block bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm font-medium">
+            <Link href={`/brands/new/upload?brandId=${brandId}`} className="inline-block bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 text-sm font-medium">
               Import Guidelines
             </Link>
           </div>
@@ -159,14 +159,14 @@ export default async function BrandProfilePage({ params }: { params: Promise<{ b
       </section>
 
       {/* Creatives link */}
-      <Link href={`/brands/${brandId}/creatives`} className="block bg-white rounded-xl border border-gray-200 p-6 hover:border-indigo-200 hover:shadow-sm transition-all text-center">
+      <Link href={`/brands/${brandId}/creatives`} className="block bg-white rounded-xl border border-gray-200 p-6 hover:border-brand-200 hover:shadow-sm transition-all text-center">
         <p className="font-medium text-gray-800">View All Creatives</p>
         <p className="text-sm text-gray-500 mt-1">See your generated social media assets</p>
       </Link>
 
       {/* Generate Creative CTA */}
       <div className="flex justify-end">
-        <Link href={`/brands/${brandId}/creatives/new`} className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 font-medium">
+        <Link href={`/brands/${brandId}/creatives/new`} className="bg-brand-600 text-white px-6 py-3 rounded-lg hover:bg-brand-700 font-medium">
           Generate Creative
         </Link>
       </div>

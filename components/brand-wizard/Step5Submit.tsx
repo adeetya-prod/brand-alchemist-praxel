@@ -26,7 +26,7 @@ export default function Step5Submit({ values, onSubmit, submitting, error }: Pro
         type="button"
         onClick={onSubmit}
         disabled={submitting || !values.name.trim()}
-        className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-brand-600 text-white py-3 rounded-lg hover:bg-brand-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {submitting ? 'Creating...' : 'Create Brand'}
       </button>

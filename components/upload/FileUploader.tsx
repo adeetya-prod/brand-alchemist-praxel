@@ -51,7 +51,7 @@ export default function FileUploader({ brandId, assetType, accept, label = 'Uplo
         onClick={() => inputRef.current?.click()}
         onDragOver={e => e.preventDefault()}
         onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFile(f) }}
-        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${done ? 'border-green-400 bg-green-50' : 'border-gray-300 hover:border-indigo-400 bg-gray-50'}`}
+        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${done ? 'border-green-400 bg-green-50' : 'border-gray-300 hover:border-brand-400 bg-gray-50'}`}
       >
         <input ref={inputRef} type="file" accept={accept} className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
         {done ? (
@@ -59,7 +59,7 @@ export default function FileUploader({ brandId, assetType, accept, label = 'Uplo
         ) : uploading ? (
           <div>
             <p className="text-gray-600 text-sm mb-2">Uploading... {progress}%</p>
-            <div className="w-full bg-gray-200 rounded-full h-1.5"><div className="bg-indigo-600 h-1.5 rounded-full transition-all" style={{ width: `${progress}%` }} /></div>
+            <div className="w-full bg-gray-200 rounded-full h-1.5"><div className="bg-brand-600 h-1.5 rounded-full transition-all" style={{ width: `${progress}%` }} /></div>
           </div>
         ) : (
           <div>

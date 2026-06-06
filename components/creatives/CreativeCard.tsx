@@ -33,7 +33,7 @@ export default function CreativeCard({ creative: initial, brandId }: { creative:
   }, [initial.id, status])
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-indigo-200 hover:shadow-sm transition-all">
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-brand-200 hover:shadow-sm transition-all">
       {/* Image / placeholder */}
       <div className="aspect-square bg-gray-50 flex items-center justify-center overflow-hidden relative">
         {status === 'COMPLETED' && url ? (
@@ -44,7 +44,7 @@ export default function CreativeCard({ creative: initial, brandId }: { creative:
           </div>
         ) : (
           <div className="text-center p-4">
-            <div className="w-8 h-8 border-3 border-indigo-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+            <div className="w-8 h-8 border-3 border-brand-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
             <p className="text-gray-400 text-xs">{status === 'PENDING' ? 'Queued' : 'Generating...'}</p>
           </div>
         )}
@@ -61,7 +61,7 @@ export default function CreativeCard({ creative: initial, brandId }: { creative:
         <p className="text-sm font-medium text-gray-800 mb-1">{FORMAT_LABEL[initial.format] || initial.format}</p>
         <p className="text-xs text-gray-400 mb-3">{new Date(initial.createdAt).toLocaleDateString()}</p>
         <div className="flex gap-2">
-          <Link href={`/brands/${brandId}/creatives/${initial.id}`} className="text-xs text-indigo-600 hover:text-indigo-700 font-medium border border-indigo-200 px-2 py-1 rounded-lg">
+          <Link href={`/brands/${brandId}/creatives/${initial.id}`} className="text-xs text-brand-600 hover:text-brand-700 font-medium border border-brand-200 px-2 py-1 rounded-lg">
             View
           </Link>
           {status === 'COMPLETED' && url && (

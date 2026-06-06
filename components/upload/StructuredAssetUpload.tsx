@@ -61,7 +61,7 @@ export default function StructuredAssetUpload({ brandId }: { brandId: string }) 
             value={fontHeading}
             onChange={e => setFontHeading(e.target.value)}
             placeholder="Playfair Display"
-            className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
         <div>
@@ -70,7 +70,7 @@ export default function StructuredAssetUpload({ brandId }: { brandId: string }) 
             value={fontBody}
             onChange={e => setFontBody(e.target.value)}
             placeholder="Inter"
-            className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
       </div>
@@ -80,7 +80,7 @@ export default function StructuredAssetUpload({ brandId }: { brandId: string }) 
           value={tagline}
           onChange={e => setTagline(e.target.value)}
           placeholder="Your brand tagline"
-          className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
       <div>
@@ -91,7 +91,7 @@ export default function StructuredAssetUpload({ brandId }: { brandId: string }) 
               key={k}
               type="button"
               onClick={() => setTone(t => t.includes(k) ? t.filter(x => x !== k) : t.length < 5 ? [...t, k] : t)}
-              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${tone.includes(k) ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 text-gray-700 hover:border-indigo-400'}`}
+              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${tone.includes(k) ? 'bg-brand-600 text-white border-brand-600' : 'border-gray-300 text-gray-700 hover:border-brand-400'}`}
             >
               {k}
             </button>
@@ -101,7 +101,7 @@ export default function StructuredAssetUpload({ brandId }: { brandId: string }) 
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium"
+        className="w-full bg-brand-600 text-white py-2 rounded-lg hover:bg-brand-700 disabled:opacity-50 font-medium"
       >
         {saving ? 'Saving...' : 'Save Brand Identity'}
       </button>

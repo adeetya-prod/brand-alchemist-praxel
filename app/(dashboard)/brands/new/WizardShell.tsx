@@ -73,10 +73,10 @@ export default function WizardShell() {
         <div className="flex items-center gap-2">
           {STEPS.map((label, i) => (
             <div key={i} className="flex items-center gap-2">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${i <= step ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${i <= step ? 'bg-brand-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
                 {i + 1}
               </div>
-              {i < STEPS.length - 1 && <div className={`h-0.5 w-8 ${i < step ? 'bg-indigo-600' : 'bg-gray-200'}`} />}
+              {i < STEPS.length - 1 && <div className={`h-0.5 w-8 ${i < step ? 'bg-brand-600' : 'bg-gray-200'}`} />}
             </div>
           ))}
         </div>
@@ -97,7 +97,7 @@ export default function WizardShell() {
           <button
             onClick={() => setStep(s => s + 1)}
             disabled={step === 0 && !state.name.trim()}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>

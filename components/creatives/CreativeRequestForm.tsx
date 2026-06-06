@@ -47,9 +47,9 @@ export default function CreativeRequestForm({ brandId, brandName }: { brandId: s
               key={f.value}
               type="button"
               onClick={() => setFormat(f.value)}
-              className={`p-4 rounded-xl border-2 text-left transition-colors ${format === f.value ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
+              className={`p-4 rounded-xl border-2 text-left transition-colors ${format === f.value ? 'border-brand-600 bg-brand-50' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
             >
-              <p className={`font-medium text-sm ${format === f.value ? 'text-indigo-700' : 'text-gray-800'}`}>{f.label}</p>
+              <p className={`font-medium text-sm ${format === f.value ? 'text-brand-700' : 'text-gray-800'}`}>{f.label}</p>
               <p className="text-xs text-gray-500">{f.desc} · {f.aspect}</p>
             </button>
           ))}
@@ -63,7 +63,7 @@ export default function CreativeRequestForm({ brandId, brandName }: { brandId: s
           rows={3}
           maxLength={500}
           placeholder="e.g. Promote our summer sale with 30% off. Use warm, energetic colors."
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
         />
         <p className="text-xs text-gray-400 mt-1">{brief.length}/500</p>
       </div>
@@ -71,7 +71,7 @@ export default function CreativeRequestForm({ brandId, brandName }: { brandId: s
       <button
         type="submit"
         disabled={submitting}
-        className="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-brand-600 text-white py-3 rounded-xl hover:bg-brand-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {submitting ? 'Queuing generation...' : `Generate ${FORMATS.find(f => f.value === format)?.label}`}
       </button>

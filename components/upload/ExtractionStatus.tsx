@@ -55,7 +55,7 @@ export default function ExtractionStatus({ guidelineId, brandId }: { guidelineId
         </div>
         <button
           onClick={() => router.push(`/brands/${brandId}`)}
-          className="mt-3 bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 text-sm font-medium"
+          className="mt-3 bg-brand-600 text-white px-4 py-1.5 rounded-lg hover:bg-brand-700 text-sm font-medium"
         >
           View Brand Profile →
         </button>
@@ -66,7 +66,7 @@ export default function ExtractionStatus({ guidelineId, brandId }: { guidelineId
   return (
     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
       <div className="flex items-center gap-3">
-        <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-4 h-4 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
         <p className="text-blue-800 text-sm font-medium">
           {status === 'PENDING' ? 'Queued...' : 'Extracting brand identity...'}
         </p>
