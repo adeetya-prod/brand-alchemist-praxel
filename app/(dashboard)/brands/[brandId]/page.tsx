@@ -16,7 +16,7 @@ export default async function BrandProfilePage({ params }: { params: Promise<{ b
 
   // Check for extraction results awaiting user review
   const pendingReview = await prisma.brandGuideline.findFirst({
-    where: { brandId, status: 'COMPLETED', NOT: { extractedData: null } },
+    where: { brandId, status: 'COMPLETED', extractedData: { not: null } } as any,
     orderBy: { updatedAt: 'desc' },
     select: { id: true },
   })

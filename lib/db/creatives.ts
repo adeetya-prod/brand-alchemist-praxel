@@ -20,3 +20,17 @@ export async function getCreative(creativeId: string): Promise<Creative> {
   if (!creative) throw new Error("Not found");
   return creative;
 }
+
+export async function getCreativeWithKey(creativeId: string) {
+  const userId = await getCurrentUser();
+  const creative = await prisma.creative.findFirst({
+    where: { id: creativeId, brand: { userId } },
+    select: {
+      id: true, format: true, prompt: true, editedPrompt: true,
+      status: true, url: true, key: true, variantIndex: true,
+      parentCreativeId: true, brandId: true, createdAt: true,
+    },
+  });
+  if (!creative) throw new Error("Not found");
+  return creative;
+}

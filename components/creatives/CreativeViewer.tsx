@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { getCreativeStatus } from '@/app/actions/creatives'
+import { useRouter } from 'next/navigation'
+import { getCreativeStatus, editCreativePrompt } from '@/app/actions/creatives'
 import Link from 'next/link'
 
 type Props = {
@@ -9,6 +10,8 @@ type Props = {
   initialStatus: string
   initialUrl: string | null
   format: string
+  prompt: string
+  editedPrompt?: string | null
 }
 
 const FORMAT_LABEL: Record<string, string> = {
@@ -18,9 +21,19 @@ const FORMAT_LABEL: Record<string, string> = {
   LINKEDIN_BANNER: 'LinkedIn Banner (1584×396)',
 }
 
-export default function CreativeViewer({ creativeId, brandId, initialStatus, initialUrl, format }: Props) {
+const DOWNLOAD_FORMATS = [
+  { label: 'Download JPG', value: 'jpg' },
+  { label: 'Download PNG', value: 'png' },
+  { label: 'Download WebP', value: 'webp' },
+]
+
+export default function CreativeViewer({ creativeId, brandId, initialStatus, initialUrl, format, prompt, editedPrompt }: Props) {
+  const router = useRouter()
   const [status, setStatus] = useState(initialStatus)
   const [url, setUrl] = useState(initialUrl)
+  const [refineOpen, setRefineOpen] = useState(false)
+  const [refinePrompt, setRefinePrompt] = useState(editedPrompt ?? prompt)
+  const [refining, setRefining] = useState(false)
 
   useEffect(() => {
     if (status === 'COMPLETED' || status === 'FAILED') return
@@ -31,6 +44,19 @@ export default function CreativeViewer({ creativeId, brandId, initialStatus, ini
     }, 3000)
     return () => clearInterval(interval)
   }, [creativeId, status])
+
+  async function handleRefine() {
+    if (!refinePrompt.trim()) return
+    setRefining(true)
+    try {
+      const result = await editCreativePrompt(creativeId, refinePrompt)
+      if ('newCreativeId' in result) {
+        router.push(`/brands/${result.brandId}/creatives/${result.newCreativeId}`)
+      }
+    } finally {
+      setRefining(false)
+    }
+  }
 
   if (status === 'FAILED') {
     return (
@@ -59,27 +85,58 @@ export default function CreativeViewer({ creativeId, brandId, initialStatus, ini
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="relative w-full">
-          <img src={url} alt="Generated creative" className="w-full h-auto block" />
-        </div>
+        <img src={url} alt="Generated creative" className="w-full h-auto block" />
       </div>
+
       <p className="text-sm text-gray-500 text-center">{FORMAT_LABEL[format] || format}</p>
-      <div className="flex gap-3 justify-center">
-        <a
-          href={url}
-          download
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-brand-600 text-white px-6 py-2 rounded-lg hover:bg-brand-700 font-medium text-sm"
-        >
-          Download
-        </a>
-        <Link href={`/brands/${brandId}/creatives/new`} className="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-50 font-medium text-sm">
+
+      {/* Download buttons */}
+      <div className="flex gap-3 justify-center flex-wrap">
+        {DOWNLOAD_FORMATS.map(fmt => (
+          <a
+            key={fmt.value}
+            href={`/api/creatives/${creativeId}/download?format=${fmt.value}`}
+            download
+            className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 font-medium text-sm"
+          >
+            {fmt.label}
+          </a>
+        ))}
+        <Link href={`/brands/${brandId}/creatives/new`} className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 font-medium text-sm">
           Generate Another
         </Link>
-        <Link href={`/brands/${brandId}`} className="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-50 font-medium text-sm">
+        <Link href={`/brands/${brandId}`} className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 font-medium text-sm">
           Back to Brand
         </Link>
+      </div>
+
+      {/* Prompt refinement panel */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <button
+          onClick={() => setRefineOpen(o => !o)}
+          className="w-full flex items-center justify-between px-5 py-4 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          <span>✨ Refine this creative</span>
+          <span className="text-gray-400">{refineOpen ? '▲' : '▼'}</span>
+        </button>
+        {refineOpen && (
+          <div className="px-5 pb-5 space-y-3 border-t border-gray-100">
+            <p className="text-xs text-gray-400 pt-3">Edit the prompt to generate a new variation. The original is preserved.</p>
+            <textarea
+              value={refinePrompt}
+              onChange={e => setRefinePrompt(e.target.value)}
+              rows={4}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+            <button
+              onClick={handleRefine}
+              disabled={refining || !refinePrompt.trim()}
+              className="bg-brand-600 text-white px-5 py-2 rounded-lg hover:bg-brand-700 text-sm font-medium disabled:opacity-50"
+            >
+              {refining ? 'Generating variation...' : 'Generate variation'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
