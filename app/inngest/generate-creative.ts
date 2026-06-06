@@ -1,5 +1,5 @@
 import { inngest } from '@/lib/inngest'
-import { openai } from '@/lib/openai'
+import { openaiImages } from '@/lib/openai'
 import { prisma } from '@/lib/prisma'
 import { r2, R2_BUCKET, R2_PUBLIC_URL } from '@/lib/r2'
 import { PutObjectCommand } from '@aws-sdk/client-s3'
@@ -24,8 +24,9 @@ const FINAL_SIZES: Record<CreativeFormat, { width: number; height: number }> = {
 }
 
 async function generateImage(prompt: string, format: CreativeFormat): Promise<Buffer> {
+  if (!openaiImages) throw new Error('OPENAI_API_KEY is not configured — image generation requires a direct OpenAI key')
   const { width, height } = GENERATE_SIZES[format]
-  const response = await openai.images.generate({
+  const response = await openaiImages.images.generate({
     model: 'gpt-image-2',
     prompt,
     n: 1,

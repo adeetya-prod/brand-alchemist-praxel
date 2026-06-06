@@ -45,7 +45,7 @@ export const extractWebsiteBrand = inngest.createFunction(
       if (!imageBase64) return {}
 
       const response = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'openai/gpt-4o',
         messages: [{
           role: 'user',
           content: [

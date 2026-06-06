@@ -23,7 +23,7 @@ export const extractPdfBrand = inngest.createFunction(
       await prisma.brandGuideline.update({ where: { id: guidelineId }, data: { openaiFileId: file.id } })
 
       const response = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'openai/gpt-4o',
         messages: [{
           role: 'user',
           content: [
