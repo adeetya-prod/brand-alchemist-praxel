@@ -1,6 +1,6 @@
 ---
 title: "feat: Brand Alchemist V2 — Product Overhaul"
-status: active
+status: completed
 date: 2026-06-06
 plan_type: feat
 depth: deep
