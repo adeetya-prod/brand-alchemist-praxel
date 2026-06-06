@@ -92,20 +92,7 @@ export const extractWebsiteBrand = inngest.createFunction(
         where: { id: guidelineId },
         data: { status: 'COMPLETED', extractedData: merged },
       })
-
-      if (merged.colors.length > 0) {
-        await prisma.brand.update({
-          where: { id: brandId },
-          data: {
-            primaryColor: merged.colors[0]?.hex,
-            secondaryColor: merged.colors[1]?.hex,
-            fontHeading: merged.fonts[0]?.name,
-            fontBody: merged.fonts[1]?.name,
-            tone: merged.toneKeywords.slice(0, 5),
-            tagline: merged.tagline || undefined,
-          },
-        })
-      }
+      // Brand is NOT updated here — user must review and confirm extracted data
     })
   }
 )

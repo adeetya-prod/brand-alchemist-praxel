@@ -1,48 +1,36 @@
+import LandingNav from '@/components/landing/LandingNav'
+import HeroSection from '@/components/landing/HeroSection'
+import FeatureBento from '@/components/landing/FeatureBento'
+import SocialProofStrip from '@/components/landing/SocialProofStrip'
 import Link from 'next/link'
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-purple-50 flex flex-col">
-      <nav className="px-6 py-4 flex items-center justify-between border-b border-gray-100 bg-white/80 backdrop-blur">
-        <h1 className="text-xl font-bold text-brand-600">Brand Alchemist</h1>
-        <div className="flex items-center gap-3">
-          <Link href="/sign-in" className="text-sm text-gray-600 hover:text-gray-900 font-medium">Sign in</Link>
-          <Link href="/sign-up" className="text-sm bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 font-medium">Get started free</Link>
-        </div>
-      </nav>
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-20 text-center">
-        <div className="max-w-3xl">
-          <h2 className="text-5xl font-bold text-gray-900 leading-tight mb-6">
-            Turn your brand identity into<br />
-            <span className="text-brand-600">scroll-stopping creatives</span>
-          </h2>
-          <p className="text-xl text-gray-600 mb-10 max-w-xl mx-auto">
-            Create brand guidelines, import existing ones from a PDF or website, then generate on-brand social media content in seconds.
-          </p>
-          <div className="flex items-center justify-center gap-4">
-            <Link href="/sign-up" className="bg-brand-600 text-white px-8 py-3 rounded-xl hover:bg-brand-700 font-semibold text-lg">
-              Start for free
-            </Link>
-            <Link href="/sign-in" className="border border-gray-300 text-gray-700 px-8 py-3 rounded-xl hover:bg-gray-50 font-semibold text-lg">
-              Sign in
-            </Link>
-          </div>
-          <p className="text-sm text-gray-400 mt-4">No credit card required</p>
-        </div>
-        <div className="mt-20 grid grid-cols-3 gap-8 max-w-2xl text-left">
-          {[
-            { icon: '🎨', title: 'Build your brand', desc: 'Step-by-step wizard to define colors, fonts, tone, and voice guidelines.' },
-            { icon: '📄', title: 'Import guidelines', desc: 'Extract brand identity from existing PDFs, websites, or structured assets.' },
-            { icon: '✨', title: 'Generate creatives', desc: 'AI-powered Instagram and LinkedIn visuals that match your brand perfectly.' },
-          ].map(({ icon, title, desc }) => (
-            <div key={title} className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-              <div className="text-2xl mb-2">{icon}</div>
-              <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
-              <p className="text-sm text-gray-500">{desc}</p>
-            </div>
-          ))}
-        </div>
-      </main>
+    <div className="min-h-screen" style={{ backgroundColor: '#0D0117', color: '#ffffff' }}>
+      <LandingNav />
+      <HeroSection />
+      <FeatureBento />
+      <SocialProofStrip />
+
+      {/* CTA footer section */}
+      <section className="py-24 text-center px-6">
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          Ready to alchemize your brand?
+        </h2>
+        <p className="text-white/50 mb-8 max-w-sm mx-auto">
+          Start for free. No credit card required.
+        </p>
+        <Link
+          href="/sign-up"
+          className="inline-block bg-[#FF6B6B] hover:bg-[#FF5252] text-white px-10 py-3.5 rounded-xl font-semibold text-base transition-colors"
+        >
+          Get started free
+        </Link>
+      </section>
+
+      <footer className="border-t border-white/10 px-6 py-8 text-center">
+        <p className="text-white/20 text-xs">© 2026 Brand Alchemist. All rights reserved.</p>
+      </footer>
     </div>
   )
 }

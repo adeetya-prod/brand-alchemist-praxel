@@ -1,4 +1,5 @@
 import { getBrand } from '@/lib/db/brands'
+import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import type { BrandAsset, BrandGuideline } from '@prisma/client'
 
@@ -13,8 +14,33 @@ export default async function BrandProfilePage({ params }: { params: Promise<{ b
 
   const hasCompletedGuideline = brand.guidelines?.some(g => g.status === 'COMPLETED')
 
+  // Check for extraction results awaiting user review
+  const pendingReview = await prisma.brandGuideline.findFirst({
+    where: { brandId, status: 'COMPLETED', NOT: { extractedData: null } },
+    orderBy: { updatedAt: 'desc' },
+    select: { id: true },
+  })
+
   return (
     <div className="max-w-3xl space-y-8">
+      {/* Pending extraction review banner */}
+      {pendingReview && (
+        <div className="flex items-center justify-between bg-brand-50 border border-brand-200 rounded-xl px-5 py-3">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-brand-600 animate-pulse" />
+            <p className="text-sm font-medium text-brand-800">
+              You have extracted brand data awaiting review.
+            </p>
+          </div>
+          <Link
+            href={`/brands/new/upload?brandId=${brandId}`}
+            className="text-xs font-semibold text-brand-700 hover:text-brand-900 underline"
+          >
+            Review now →
+          </Link>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
