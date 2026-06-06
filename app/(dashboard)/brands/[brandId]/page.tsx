@@ -1,6 +1,7 @@
 import { getBrand } from '@/lib/db/brands'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import type { BrandAsset, BrandGuideline } from '@prisma/client'
 
 type BrandWithRelations = Awaited<ReturnType<typeof getBrand>> & {
@@ -10,7 +11,12 @@ type BrandWithRelations = Awaited<ReturnType<typeof getBrand>> & {
 
 export default async function BrandProfilePage({ params }: { params: Promise<{ brandId: string }> }) {
   const { brandId } = await params
-  const brand = await getBrand(brandId) as BrandWithRelations
+  let brand: BrandWithRelations
+  try {
+    brand = await getBrand(brandId) as BrandWithRelations
+  } catch {
+    redirect('/brands')
+  }
 
   const hasCompletedGuideline = brand.guidelines?.some(g => g.status === 'COMPLETED')
 
