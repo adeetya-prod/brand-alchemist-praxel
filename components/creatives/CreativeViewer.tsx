@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getCreativeStatus, editCreativePrompt } from '@/app/actions/creatives'
+import { getCreativeStatus, editCreativePrompt, retryCreative } from '@/app/actions/creatives'
 import Link from 'next/link'
 
 type Props = {
@@ -34,6 +34,7 @@ export default function CreativeViewer({ creativeId, brandId, initialStatus, ini
   const [refineOpen, setRefineOpen] = useState(false)
   const [refinePrompt, setRefinePrompt] = useState(editedPrompt ?? prompt)
   const [refining, setRefining] = useState(false)
+  const [retrying, setRetrying] = useState(false)
 
   useEffect(() => {
     if (status === 'COMPLETED' || status === 'FAILED') return
@@ -58,14 +59,33 @@ export default function CreativeViewer({ creativeId, brandId, initialStatus, ini
     }
   }
 
+  async function handleRetry() {
+    setRetrying(true)
+    try {
+      await retryCreative(creativeId)
+      setStatus('PENDING')
+    } finally {
+      setRetrying(false)
+    }
+  }
+
   if (status === 'FAILED') {
     return (
       <div className="p-6 bg-red-50 rounded-xl border border-red-200 text-center">
         <p className="text-red-600 font-medium mb-2">Generation failed</p>
-        <p className="text-sm text-gray-500 mb-4">Something went wrong. Please try again.</p>
-        <Link href={`/brands/${brandId}/creatives/new`} className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 text-sm font-medium">
-          Try Again
-        </Link>
+        <p className="text-sm text-gray-500 mb-4">Something went wrong generating this creative.</p>
+        <div className="flex gap-3 justify-center">
+          <button
+            onClick={handleRetry}
+            disabled={retrying}
+            className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 text-sm font-medium disabled:opacity-50"
+          >
+            {retrying ? 'Retrying...' : 'Retry'}
+          </button>
+          <Link href={`/brands/${brandId}/creatives/new`} className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm font-medium">
+            New Creative
+          </Link>
+        </div>
       </div>
     )
   }

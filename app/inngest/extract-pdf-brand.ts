@@ -1,7 +1,8 @@
 import { inngest } from '@/lib/inngest'
 import { openai } from '@/lib/openai'
 import { prisma } from '@/lib/prisma'
-import { R2_PUBLIC_URL } from '@/lib/r2'
+import { getAssetBuffer } from '@/lib/storage'
+import pdfParse from 'pdf-parse'
 
 export const extractPdfBrand = inngest.createFunction(
   { id: 'extract-pdf-brand', retries: 2, triggers: [{ event: 'brand/pdf.extract.requested' }] },
@@ -12,29 +13,22 @@ export const extractPdfBrand = inngest.createFunction(
       await prisma.brandGuideline.update({ where: { id: guidelineId }, data: { status: 'PROCESSING' } })
     })
 
-    const visionResult = await step.run('extract-vision', async () => {
-      const url = `${R2_PUBLIC_URL}/${assetKey}`
-      const fileRes = await fetch(url)
-      const fileBuffer = Buffer.from(await fileRes.arrayBuffer())
-      const file = await openai.files.create({
-        file: new File([fileBuffer], 'brand-guidelines.pdf', { type: 'application/pdf' }),
-        purpose: 'user_data',
-      })
-      await prisma.brandGuideline.update({ where: { id: guidelineId }, data: { openaiFileId: file.id } })
+    const visionResult = await step.run('extract-text', async () => {
+      const fileBuffer = await getAssetBuffer(assetKey)
+      const parsed = await pdfParse(fileBuffer)
+      const text = parsed.text.slice(0, 12_000) // ~3k tokens, enough for brand guidelines
 
       const response = await openai.chat.completions.create({
         model: 'openai/gpt-4o',
         messages: [{
           role: 'user',
-          content: [
-            { type: 'file', file: { file_id: file.id } } as any,
-            {
-              type: 'text',
-              text: `Analyze this brand guideline document. Extract all brand identity information and return ONLY valid JSON:
+          content: `Analyze this brand guideline document text and extract brand identity information. Return ONLY valid JSON:
 {"colors":[{"hex":"#XXXXXX","name":"Color name","usage":"where used"}],"fonts":[{"name":"Font Family Name","usage":"heading/body"}],"taglines":["tagline text"],"voiceKeywords":["keyword1","keyword2"]}
+
+Document text:
+${text}
+
 Return only the JSON, no other text.`,
-            },
-          ],
         }],
         response_format: { type: 'json_object' },
         max_tokens: 1000,
@@ -57,7 +51,6 @@ Return only the JSON, no other text.`,
         where: { id: guidelineId },
         data: { status: 'COMPLETED', extractedData: merged },
       })
-      // Brand is NOT updated here — user must review and confirm extracted data
     })
   }
 )

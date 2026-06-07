@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { getCreativeStatus } from '@/app/actions/creatives'
+import { getCreativeStatus, retryCreative } from '@/app/actions/creatives'
 import type { Creative } from '@prisma/client'
 
 const FORMAT_LABEL: Record<string, string> = {
@@ -21,6 +21,7 @@ const STATUS_BADGE: Record<string, string> = {
 export default function CreativeCard({ creative: initial, brandId }: { creative: Creative; brandId: string }) {
   const [status, setStatus] = useState(initial.status)
   const [url, setUrl] = useState(initial.url)
+  const [retrying, setRetrying] = useState(false)
 
   useEffect(() => {
     if (status === 'COMPLETED' || status === 'FAILED') return
@@ -32,6 +33,16 @@ export default function CreativeCard({ creative: initial, brandId }: { creative:
     return () => clearInterval(interval)
   }, [initial.id, status])
 
+  async function handleRetry() {
+    setRetrying(true)
+    try {
+      await retryCreative(initial.id)
+      setStatus('PENDING')
+    } finally {
+      setRetrying(false)
+    }
+  }
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-brand-200 hover:shadow-sm transition-all">
       {/* Image / placeholder */}
@@ -40,7 +51,14 @@ export default function CreativeCard({ creative: initial, brandId }: { creative:
           <img src={url} alt={FORMAT_LABEL[initial.format] || initial.format} className="w-full h-full object-cover" />
         ) : status === 'FAILED' ? (
           <div className="text-center p-4">
-            <p className="text-red-400 text-sm font-medium">Generation failed</p>
+            <p className="text-red-400 text-sm font-medium mb-2">Generation failed</p>
+            <button
+              onClick={handleRetry}
+              disabled={retrying}
+              className="text-xs bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 px-3 py-1 rounded-lg disabled:opacity-50"
+            >
+              {retrying ? 'Retrying...' : 'Retry'}
+            </button>
           </div>
         ) : (
           <div className="text-center p-4">

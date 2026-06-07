@@ -11,7 +11,13 @@ export async function triggerPdfExtraction(brandId: string, assetKey: string) {
   const guideline = await prisma.brandGuideline.create({
     data: { brandId, source: 'PDF', status: 'PENDING' },
   })
-  await inngest.send({ name: 'brand/pdf.extract.requested', data: { brandId, guidelineId: guideline.id, assetKey } })
+  try {
+    await inngest.send({ name: 'brand/pdf.extract.requested', data: { brandId, guidelineId: guideline.id, assetKey } })
+  } catch (err) {
+    console.error('[inngest] pdf extract send failed:', err)
+    await prisma.brandGuideline.update({ where: { id: guideline.id }, data: { status: 'FAILED' } })
+    return { guidelineId: guideline.id, error: 'Job queue unavailable. Please try again.' }
+  }
   return { guidelineId: guideline.id }
 }
 

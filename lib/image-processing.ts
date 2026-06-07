@@ -7,11 +7,12 @@ export interface BrandCompositeData {
   fontHeading: string | null
 }
 
+// Sizes must match dall-e-3 supported dimensions: 1024×1024, 1024×1792, 1792×1024
 export const GENERATE_SIZES: Record<CreativeFormat, { width: number; height: number }> = {
-  INSTAGRAM_SQUARE: { width: 1088, height: 1088 },
-  INSTAGRAM_STORY:  { width: 1088, height: 1920 },
-  LINKEDIN_POST:    { width: 1200, height: 624  },
-  LINKEDIN_BANNER:  { width: 1584, height: 528  },
+  INSTAGRAM_SQUARE: { width: 1024, height: 1024 },
+  INSTAGRAM_STORY:  { width: 1024, height: 1792 },
+  LINKEDIN_POST:    { width: 1792, height: 1024 },
+  LINKEDIN_BANNER:  { width: 1792, height: 1024 },
 }
 
 export const FINAL_SIZES: Record<CreativeFormat, { width: number; height: number }> = {

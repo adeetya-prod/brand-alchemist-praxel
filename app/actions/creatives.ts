@@ -26,6 +26,39 @@ const BatchRequestSchema = z.object({
   additionalContext: z.string().max(300).optional(),
 })
 
+// Sends Inngest events for creative generation with after() fallback.
+// If Inngest is not configured or fails, generation runs directly via after().
+async function dispatchCreativeJobs(
+  rows: Array<{ id: string; brandId: string; format: string; prompt: string }>
+) {
+  const isLocal = !process.env.INNGEST_EVENT_KEY || process.env.INNGEST_EVENT_KEY === 'local'
+  let useFallback = isLocal
+
+  if (!isLocal) {
+    try {
+      await inngest.send(
+        rows.map(row => ({
+          name: 'creative/generate.requested' as const,
+          data: { creativeId: row.id, brandId: row.brandId, format: row.format, prompt: row.prompt },
+        }))
+      )
+    } catch (err) {
+      console.error('[inngest] creative send failed, falling back to after():', err)
+      useFallback = true
+    }
+  }
+
+  if (useFallback) {
+    const snapshot = rows.map(r => ({ id: r.id, format: r.format as CreativeFormat, prompt: r.prompt }))
+    after(async () => {
+      const { runLocalGeneration } = await import('@/lib/local-generation')
+      for (const row of snapshot) {
+        await runLocalGeneration(row.id, row.format, row.prompt)
+      }
+    })
+  }
+}
+
 export async function requestCreativeGeneration(input: z.infer<typeof RequestSchema>) {
   await getCurrentUser()
   const parsed = RequestSchema.safeParse(input)
@@ -43,11 +76,7 @@ export async function requestCreativeGeneration(input: z.infer<typeof RequestSch
     },
   })
 
-  await inngest.send({
-    name: 'creative/generate.requested',
-    data: { creativeId: creative.id, brandId: parsed.data.brandId, format: parsed.data.format, prompt },
-  })
-
+  await dispatchCreativeJobs([{ id: creative.id, brandId: parsed.data.brandId, format: parsed.data.format, prompt }])
   return { creativeId: creative.id }
 }
 
@@ -60,7 +89,6 @@ export async function requestBatchCreativeGeneration(input: z.infer<typeof Batch
   const { formats, brief, brandId, ctaLabel, tone, intent, additionalContext } = parsed.data
   const briefOptions = { ctaLabel, tone, intent, additionalContext }
 
-  // Create all Creative rows in one transaction
   const rows = await prisma.$transaction(
     formats.flatMap(format =>
       [0, 1].map(variantIndex =>
@@ -80,27 +108,24 @@ export async function requestBatchCreativeGeneration(input: z.infer<typeof Batch
     )
   )
 
-  // Batch-send all Inngest events in a single HTTP call
-  await inngest.send(
-    rows.map(row => ({
-      name: 'creative/generate.requested' as const,
-      data: { creativeId: row.id, brandId, format: row.format, prompt: row.prompt },
-    }))
-  )
+  await dispatchCreativeJobs(rows.map(r => ({ id: r.id, brandId, format: r.format, prompt: r.prompt })))
+  return { brandId, count: rows.length }
+}
 
-  // When Inngest is in local/dev mode without a dev server, run generation directly
-  // after the response is sent so the user isn't blocked waiting
-  if (!process.env.INNGEST_EVENT_KEY || process.env.INNGEST_EVENT_KEY === 'local') {
-    const rowSnapshot = rows.map(r => ({ id: r.id, format: r.format as CreativeFormat, prompt: r.prompt }))
-    after(async () => {
-      const { runLocalGeneration } = await import('@/lib/local-generation')
-      for (const row of rowSnapshot) {
-        await runLocalGeneration(row.id, row.format, row.prompt)
-      }
-    })
+export async function retryCreative(creativeId: string) {
+  const userId = await getCurrentUser()
+  const creative = await prisma.creative.findFirst({
+    where: { id: creativeId, brand: { userId } },
+    select: { id: true, brandId: true, format: true, prompt: true, status: true },
+  })
+  if (!creative) throw new Error('Not found')
+  if (creative.status !== 'FAILED' && creative.status !== 'PENDING') {
+    return { creativeId: creative.id }
   }
 
-  return { brandId, count: rows.length }
+  await prisma.creative.update({ where: { id: creativeId }, data: { status: 'PENDING' } })
+  await dispatchCreativeJobs([{ id: creative.id, brandId: creative.brandId, format: creative.format, prompt: creative.prompt }])
+  return { creativeId: creative.id }
 }
 
 export async function getCreativeStatus(creativeId: string) {
@@ -145,19 +170,6 @@ export async function editCreativePrompt(creativeId: string, newPrompt: string) 
     },
   })
 
-  await inngest.send({
-    name: 'creative/generate.requested',
-    data: { creativeId: newCreative.id, brandId: original.brandId, format: original.format, prompt: newPrompt },
-  })
-
-  if (!process.env.INNGEST_EVENT_KEY || process.env.INNGEST_EVENT_KEY === 'local') {
-    const id = newCreative.id
-    const fmt = original.format as CreativeFormat
-    after(async () => {
-      const { runLocalGeneration } = await import('@/lib/local-generation')
-      await runLocalGeneration(id, fmt, newPrompt)
-    })
-  }
-
+  await dispatchCreativeJobs([{ id: newCreative.id, brandId: original.brandId, format: original.format, prompt: newPrompt }])
   return { newCreativeId: newCreative.id, brandId: original.brandId }
 }

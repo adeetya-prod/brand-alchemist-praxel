@@ -22,6 +22,12 @@ export async function triggerWebsiteExtraction(brandId: string, url: string) {
     data: { brandId, source: 'WEBSITE', status: 'PENDING' },
   })
   await prisma.brand.update({ where: { id: brandId }, data: { sourceUrl: url } })
-  await inngest.send({ name: 'brand/website.extract.requested', data: { brandId, guidelineId: guideline.id, url } })
+  try {
+    await inngest.send({ name: 'brand/website.extract.requested', data: { brandId, guidelineId: guideline.id, url } })
+  } catch (err) {
+    console.error('[inngest] website extract send failed:', err)
+    await prisma.brandGuideline.update({ where: { id: guideline.id }, data: { status: 'FAILED' } })
+    return { guidelineId: guideline.id, error: 'Job queue unavailable. Please try again.' }
+  }
   return { guidelineId: guideline.id }
 }

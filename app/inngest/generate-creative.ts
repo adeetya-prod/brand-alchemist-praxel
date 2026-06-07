@@ -8,25 +8,16 @@ import type { CreativeFormat } from '@prisma/client'
 
 async function generateImage(prompt: string, format: CreativeFormat): Promise<Buffer> {
   const { width, height } = GENERATE_SIZES[format]
-
-  if (openaiImages) {
-    const response = await openaiImages.images.generate({
-      model: 'gpt-image-2',
-      prompt,
-      n: 1,
-      size: `${width}x${height}` as any,
-      response_format: 'b64_json',
-    })
-    const b64 = response.data?.[0]?.b64_json
-    if (!b64) throw new Error('No image data in response')
-    return Buffer.from(b64, 'base64')
-  }
-
-  // Fallback: Pollinations.ai (free, no API key required)
-  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&nologo=true&model=flux&seed=${Math.floor(Math.random() * 99999)}`
-  const res = await fetch(url, { signal: AbortSignal.timeout(120_000) })
-  if (!res.ok) throw new Error(`Pollinations returned ${res.status}`)
-  return Buffer.from(await res.arrayBuffer())
+  const response = await openaiImages.images.generate({
+    model: 'openai/dall-e-3',
+    prompt,
+    n: 1,
+    size: `${width}x${height}` as any,
+    response_format: 'b64_json',
+  })
+  const b64 = response.data?.[0]?.b64_json
+  if (!b64) throw new Error('No image data in response')
+  return Buffer.from(b64, 'base64')
 }
 
 export const generateCreative = inngest.createFunction(
