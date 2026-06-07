@@ -5,9 +5,12 @@ import { Pool } from "pg";
 function createPrismaClient() {
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    max: 1,                    // one connection per serverless invocation
-    idleTimeoutMillis: 10,     // close idle connections immediately
+    max: 1,
+    idleTimeoutMillis: 10,
     connectionTimeoutMillis: 10_000,
+    // Do NOT put sslmode=require in the URL — pg-connection-string treats it as
+    // verify-full, which rejects Supabase's self-signed cert even with rejectUnauthorized: false.
+    // SSL must be configured here only.
     ssl: process.env.NODE_ENV === "production"
       ? { rejectUnauthorized: false }
       : false,
