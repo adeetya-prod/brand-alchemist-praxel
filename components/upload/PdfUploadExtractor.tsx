@@ -14,7 +14,7 @@ export default function PdfUploadExtractor({ brandId }: { brandId: string }) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-white/60">
         Upload your brand guidelines PDF. We'll automatically extract colors, fonts, and tone of voice.
       </p>
       {!guidelineId ? (
