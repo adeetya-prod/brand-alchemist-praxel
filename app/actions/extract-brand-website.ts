@@ -25,5 +25,3 @@ export async function triggerWebsiteExtraction(brandId: string, url: string) {
   await inngest.send({ name: 'brand/website.extract.requested', data: { brandId, guidelineId: guideline.id, url } })
   return { guidelineId: guideline.id }
 }
-
-export { getGuidelineStatus } from './extract-brand-pdf'

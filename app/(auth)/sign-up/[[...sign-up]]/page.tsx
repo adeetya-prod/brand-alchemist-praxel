@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import Link from 'next/link'
+import { DARK_INPUT_CLASS, DARK_INPUT_STYLE, DARK_LABEL_CLASS } from '@/lib/styles'
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -36,12 +37,12 @@ export default function SignUpPage() {
 
   if (verifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-full max-w-sm bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: '#0a0a14' }}>
+        <div className="w-full max-w-sm rounded-2xl p-8 text-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)' }}>
           <div className="text-3xl mb-3">📬</div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">Check your email</h2>
-          <p className="text-sm text-gray-500">
-            We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account.
+          <h2 className="text-lg font-semibold text-white mb-2">Check your email</h2>
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            We sent a confirmation link to <span className="text-white font-medium">{email}</span>. Click it to activate your account.
           </p>
         </div>
       </div>
@@ -49,31 +50,34 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-sm bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Create account</h1>
-        <p className="text-sm text-gray-500 mb-6">Start building your brand identity</p>
+    <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: '#0a0a14' }}>
+      <div className="mb-8 text-center">
+        <span className="text-2xl font-bold tracking-tight" style={{ background: 'linear-gradient(135deg, #7C3AED, #FF6B6B)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          Brand Alchemist
+        </span>
+      </div>
+
+      <div className="w-full max-w-sm rounded-2xl p-8" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)' }}>
+        <h1 className="text-2xl font-bold text-white mb-1">Create account</h1>
+        <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.45)' }}>Start building your brand identity</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
+            <label htmlFor="email" className={DARK_LABEL_CLASS}>Email</label>
             <input
               id="email"
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className={DARK_INPUT_CLASS}
+              style={DARK_INPUT_STYLE}
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
+            <label htmlFor="password" className={DARK_LABEL_CLASS}>Password</label>
             <input
               id="password"
               type="password"
@@ -81,13 +85,14 @@ export default function SignUpPage() {
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className={DARK_INPUT_CLASS}
+              style={DARK_INPUT_STYLE}
               placeholder="At least 6 characters"
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <p className="text-sm rounded-xl px-4 py-3" style={{ background: 'rgba(255,107,107,0.12)', color: '#FF6B6B', border: '1px solid rgba(255,107,107,0.25)' }}>
               {error}
             </p>
           )}
@@ -95,15 +100,16 @@ export default function SignUpPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 px-4 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 rounded-xl font-semibold text-white text-sm disabled:opacity-40 transition-opacity"
+            style={{ background: 'linear-gradient(135deg, #7C3AED, #FF6B6B)' }}
           >
             {loading ? 'Creating account…' : 'Create account'}
           </button>
         </form>
 
-        <p className="mt-4 text-sm text-center text-gray-500">
+        <p className="mt-5 text-sm text-center" style={{ color: 'rgba(255,255,255,0.45)' }}>
           Already have an account?{' '}
-          <Link href="/sign-in" className="text-brand-600 hover:underline font-medium">
+          <Link href="/sign-in" className="font-medium" style={{ color: '#C4B5FD' }}>
             Sign in
           </Link>
         </p>

@@ -51,20 +51,25 @@ export default function FileUploader({ brandId, assetType, accept, label = 'Uplo
         onClick={() => inputRef.current?.click()}
         onDragOver={e => e.preventDefault()}
         onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFile(f) }}
-        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${done ? 'border-green-400 bg-green-50' : 'border-gray-300 hover:border-brand-400 bg-gray-50'}`}
+        className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors"
+        style={done
+          ? { borderColor: 'rgba(74,222,128,0.5)', background: 'rgba(74,222,128,0.08)' }
+          : { borderColor: 'rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.03)' }}
       >
         <input ref={inputRef} type="file" accept={accept} className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
         {done ? (
-          <p className="text-green-600 font-medium">&#10003; Uploaded</p>
+          <p className="text-green-400 font-medium">&#10003; Uploaded</p>
         ) : uploading ? (
           <div>
-            <p className="text-gray-600 text-sm mb-2">Uploading... {progress}%</p>
-            <div className="w-full bg-gray-200 rounded-full h-1.5"><div className="bg-brand-600 h-1.5 rounded-full transition-all" style={{ width: `${progress}%` }} /></div>
+            <p className="text-white/60 text-sm mb-2">Uploading... {progress}%</p>
+            <div className="w-full rounded-full h-1.5" style={{ background: 'rgba(255,255,255,0.1)' }}>
+              <div className="h-1.5 rounded-full transition-all" style={{ width: `${progress}%`, background: 'linear-gradient(135deg, #7C3AED, #FF6B6B)' }} />
+            </div>
           </div>
         ) : (
           <div>
-            <p className="text-gray-600 text-sm">{label}</p>
-            <p className="text-gray-400 text-xs mt-1">Click or drag &amp; drop</p>
+            <p className="text-white/55 text-sm">{label}</p>
+            <p className="text-white/30 text-xs mt-1">Click or drag &amp; drop</p>
           </div>
         )}
       </div>

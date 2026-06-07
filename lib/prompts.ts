@@ -33,7 +33,8 @@ export function buildPrompt(
   brand: Brand,
   format: CreativeFormat,
   brief?: string,
-  variantIndex = 0
+  variantIndex = 0,
+  options?: { ctaLabel?: string; tone?: string; intent?: string; additionalContext?: string }
 ): string {
   const parts: string[] = [
     "Professional marketing creative, social media post.",
@@ -42,8 +43,21 @@ export function buildPrompt(
     buildBrandSystemContext(brand),
   ];
 
+  if (options?.intent) {
+    parts.push(`Campaign goal: ${options.intent}.`);
+  }
+  if (options?.tone) {
+    parts.push(`Creative tone: ${options.tone} — convey through composition, lighting, and color temperature.`);
+  }
+  if (options?.ctaLabel) {
+    parts.push(`Reserve a clear area for a '${options.ctaLabel}' CTA button overlay.`);
+  }
+
   if (brief) {
     parts.push(`Content: ${brief}.`);
+  }
+  if (options?.additionalContext) {
+    parts.push(`Additional context: ${options.additionalContext}.`);
   }
 
   if (variantIndex === 1) {

@@ -12,12 +12,57 @@ const FORMATS: { value: Format; label: string; desc: string; aspect: string; ico
   { value: 'LINKEDIN_BANNER', label: 'LinkedIn Banner', desc: 'Profile banner', aspect: '4:1', icon: '🏷' },
 ]
 
+const CTA_OPTIONS = ['Learn More', 'Shop Now', 'Sign Up', 'Book a Demo', 'Get Started', 'Download Now', 'Contact Us']
+const TONE_OPTIONS = ['Professional', 'Playful', 'Bold', 'Minimal', 'Urgent', 'Inspirational']
+const INTENT_OPTIONS = ['Brand Awareness', 'Drive Sales', 'Event Promotion', 'Lead Generation', 'Customer Retention', 'Product Launch']
+
 const CARD = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)' }
+const PILL_DEFAULT = { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.1)' }
+const PILL_ACTIVE = { background: 'rgba(124,58,237,0.22)', color: '#C4B5FD', border: '1px solid rgba(124,58,237,0.45)' }
+
+function PillGroup({
+  label,
+  options,
+  value,
+  onChange,
+  required,
+}: {
+  label: string
+  options: string[]
+  value: string
+  onChange: (v: string) => void
+  required?: boolean
+}) {
+  return (
+    <div className="rounded-2xl p-5" style={CARD}>
+      <p className="text-sm font-semibold text-white mb-1">
+        {label}
+        {required && <span className="ml-1 text-[#FF6B6B]">*</span>}
+      </p>
+      <div className="flex flex-wrap gap-2 mt-3">
+        {options.map(opt => (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => onChange(opt)}
+            className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+            style={value === opt ? PILL_ACTIVE : PILL_DEFAULT}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function CreativeRequestForm({ brandId, brandName }: { brandId: string; brandName: string }) {
   const router = useRouter()
   const [selectedFormats, setSelectedFormats] = useState<Format[]>(['INSTAGRAM_SQUARE'])
-  const [brief, setBrief] = useState('')
+  const [ctaLabel, setCtaLabel] = useState('')
+  const [tone, setTone] = useState('')
+  const [intent, setIntent] = useState('')
+  const [additionalContext, setAdditionalContext] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -28,17 +73,21 @@ export default function CreativeRequestForm({ brandId, brandName }: { brandId: s
   }
 
   const totalCreatives = selectedFormats.length * 2
+  const canSubmit = selectedFormats.length > 0 && ctaLabel && tone && intent
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (selectedFormats.length === 0) { setError('Select at least one format.'); return }
+    if (!canSubmit) { setError('Select at least one format and fill in all required fields.'); return }
     setError(null)
     setSubmitting(true)
     try {
       const result = await requestBatchCreativeGeneration({
         brandId,
         formats: selectedFormats,
-        brief: brief || undefined,
+        ctaLabel,
+        tone,
+        intent,
+        additionalContext: additionalContext || undefined,
       })
       if ('error' in result) {
         setError('Failed to start generation. Please try again.')
@@ -54,6 +103,7 @@ export default function CreativeRequestForm({ brandId, brandName }: { brandId: s
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Format selector */}
       <div className="rounded-2xl p-5" style={CARD}>
         <p className="text-sm font-semibold text-white mb-1">Select Formats</p>
         <p className="text-xs text-white/40 mb-4">Each format generates 2 variants — so you always have options.</p>
@@ -91,28 +141,34 @@ export default function CreativeRequestForm({ brandId, brandName }: { brandId: s
         )}
       </div>
 
+      {/* CTA, Tone, Intent pill selectors */}
+      <PillGroup label="CTA Button" options={CTA_OPTIONS} value={ctaLabel} onChange={setCtaLabel} required />
+      <PillGroup label="Creative Tone" options={TONE_OPTIONS} value={tone} onChange={setTone} required />
+      <PillGroup label="Campaign Goal" options={INTENT_OPTIONS} value={intent} onChange={setIntent} required />
+
+      {/* Additional context */}
       <div className="rounded-2xl p-5" style={CARD}>
         <label className="block text-sm font-semibold text-white mb-1">
-          Creative Brief <span className="text-white/35 font-normal">(optional)</span>
+          Additional Context <span className="text-white/35 font-normal">(optional)</span>
         </label>
-        <p className="text-xs text-white/40 mb-3">Describe the campaign or message. More specific = better results.</p>
+        <p className="text-xs text-white/40 mb-3">Any extra details, campaign specifics, or creative direction.</p>
         <textarea
-          value={brief}
-          onChange={e => setBrief(e.target.value)}
+          value={additionalContext}
+          onChange={e => setAdditionalContext(e.target.value)}
           rows={3}
-          maxLength={500}
-          placeholder="e.g. Summer sale — 30% off. Use warm, energetic visuals that feel spontaneous."
+          maxLength={300}
+          placeholder="e.g. Summer sale — 30% off. Focus on outdoor lifestyle imagery."
           className="w-full px-4 py-3 rounded-xl text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm resize-none"
           style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
         />
-        <p className="text-xs text-white/30 mt-1.5 text-right">{brief.length}/500</p>
+        <p className="text-xs text-white/30 mt-1.5 text-right">{additionalContext.length}/300</p>
       </div>
 
       {error && <p className="text-sm text-[#FF6B6B]">{error}</p>}
 
       <button
         type="submit"
-        disabled={submitting || selectedFormats.length === 0}
+        disabled={submitting || !canSubmit}
         className="w-full py-3.5 rounded-xl font-semibold text-white disabled:opacity-40 transition-opacity text-sm"
         style={{ background: 'linear-gradient(135deg, #7C3AED, #FF6B6B)' }}
       >

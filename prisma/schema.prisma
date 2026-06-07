@@ -82,6 +82,9 @@ model Creative {
   parent           Creative?      @relation("CreativeVariants", fields: [parentCreativeId], references: [id], onDelete: SetNull)
   variants         Creative[]     @relation("CreativeVariants")
   variantIndex     Int            @default(0)
+  ctaLabel         String?
+  tone             String?
+  intent           String?
   url              String?
   key              String?
   status           JobStatus      @default(PENDING)

@@ -20,6 +20,10 @@ const BatchRequestSchema = z.object({
   brandId: z.string().min(1),
   formats: z.array(z.enum(FORMAT_VALUES)).min(1),
   brief: z.string().max(500).optional(),
+  ctaLabel: z.string().min(1),
+  tone: z.string().min(1),
+  intent: z.string().min(1),
+  additionalContext: z.string().max(300).optional(),
 })
 
 export async function requestCreativeGeneration(input: z.infer<typeof RequestSchema>) {
@@ -53,7 +57,8 @@ export async function requestBatchCreativeGeneration(input: z.infer<typeof Batch
   if (!parsed.success) return { error: parsed.error.flatten() }
 
   const brand = await getBrand(parsed.data.brandId)
-  const { formats, brief, brandId } = parsed.data
+  const { formats, brief, brandId, ctaLabel, tone, intent, additionalContext } = parsed.data
+  const briefOptions = { ctaLabel, tone, intent, additionalContext }
 
   // Create all Creative rows in one transaction
   const rows = await prisma.$transaction(
@@ -63,8 +68,11 @@ export async function requestBatchCreativeGeneration(input: z.infer<typeof Batch
           data: {
             brandId,
             format,
-            prompt: buildPrompt(brand as any, format as CreativeFormat, brief, variantIndex),
+            prompt: buildPrompt(brand as any, format as CreativeFormat, brief, variantIndex, briefOptions),
             variantIndex,
+            ctaLabel,
+            tone,
+            intent,
             status: 'PENDING',
           },
         })
@@ -112,7 +120,7 @@ export async function getCreativesForBrand(brandId: string) {
   return prisma.creative.findMany({
     where: { brandId },
     orderBy: { createdAt: 'desc' },
-    select: { id: true, format: true, status: true, url: true, variantIndex: true, parentCreativeId: true, prompt: true, editedPrompt: true, createdAt: true },
+    select: { id: true, format: true, status: true, url: true, variantIndex: true, parentCreativeId: true, prompt: true, editedPrompt: true, ctaLabel: true, tone: true, intent: true, createdAt: true },
   })
 }
 
