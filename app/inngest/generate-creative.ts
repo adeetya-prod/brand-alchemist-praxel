@@ -1,13 +1,11 @@
 import { inngest } from '@/lib/inngest'
 import { openaiImages } from '@/lib/openai'
 import { prisma } from '@/lib/prisma'
-import { r2, R2_BUCKET, R2_PUBLIC_URL } from '@/lib/r2'
-import { PutObjectCommand } from '@aws-sdk/client-s3'
+import { uploadAsset } from '@/lib/storage'
 import { nanoid } from 'nanoid'
 import sharp from 'sharp'
 import type { CreativeFormat } from '@prisma/client'
 
-// gpt-image-2 native generation sizes (multiples of 16, max 3:1 aspect ratio)
 const GENERATE_SIZES: Record<CreativeFormat, { width: number; height: number }> = {
   INSTAGRAM_SQUARE: { width: 1088, height: 1088 },
   INSTAGRAM_STORY:  { width: 1088, height: 1920 },
@@ -15,7 +13,6 @@ const GENERATE_SIZES: Record<CreativeFormat, { width: number; height: number }> 
   LINKEDIN_BANNER:  { width: 1584, height: 528  },
 }
 
-// Final output sizes after sharp post-processing
 const FINAL_SIZES: Record<CreativeFormat, { width: number; height: number }> = {
   INSTAGRAM_SQUARE: { width: 1080, height: 1080 },
   INSTAGRAM_STORY:  { width: 1080, height: 1920 },
@@ -24,18 +21,26 @@ const FINAL_SIZES: Record<CreativeFormat, { width: number; height: number }> = {
 }
 
 async function generateImage(prompt: string, format: CreativeFormat): Promise<Buffer> {
-  if (!openaiImages) throw new Error('OPENAI_API_KEY is not configured — image generation requires a direct OpenAI key')
   const { width, height } = GENERATE_SIZES[format]
-  const response = await openaiImages.images.generate({
-    model: 'gpt-image-2',
-    prompt,
-    n: 1,
-    size: `${width}x${height}` as any,
-    response_format: 'b64_json',
-  })
-  const b64 = response.data?.[0]?.b64_json
-  if (!b64) throw new Error('No image data in response')
-  return Buffer.from(b64, 'base64')
+
+  if (openaiImages) {
+    const response = await openaiImages.images.generate({
+      model: 'gpt-image-2',
+      prompt,
+      n: 1,
+      size: `${width}x${height}` as any,
+      response_format: 'b64_json',
+    })
+    const b64 = response.data?.[0]?.b64_json
+    if (!b64) throw new Error('No image data in response')
+    return Buffer.from(b64, 'base64')
+  }
+
+  // Fallback: Pollinations.ai (free, no API key required)
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&nologo=true&model=flux&seed=${Math.floor(Math.random() * 99999)}`
+  const res = await fetch(url, { signal: AbortSignal.timeout(120_000) })
+  if (!res.ok) throw new Error(`Pollinations returned ${res.status}`)
+  return Buffer.from(await res.arrayBuffer())
 }
 
 async function postProcess(buffer: Buffer, format: CreativeFormat): Promise<Buffer> {
@@ -45,13 +50,11 @@ async function postProcess(buffer: Buffer, format: CreativeFormat): Promise<Buff
   let pipeline = sharp(buffer)
 
   if (format === 'LINKEDIN_POST') {
-    // Generated at 1200×624, need 1200×628 — add 2px white bars top/bottom
     pipeline = pipeline.extend({
       top: 2, bottom: 2, left: 0, right: 0,
       background: { r: 255, g: 255, b: 255, alpha: 1 },
     })
   } else if (gen.width !== width || gen.height !== height) {
-    // Resize to final dimensions
     pipeline = pipeline.resize(width, height, { fit: 'cover', position: 'center' })
   }
 
@@ -79,7 +82,7 @@ export const generateCreative = inngest.createFunction(
 
     const imageBuffer = await step.run('generate-image', async () => {
       const buf = await generateImage(prompt, format as CreativeFormat)
-      return Array.from(buf) // Inngest step results must be JSON-serializable
+      return Array.from(buf)
     })
 
     const processedBuffer = await step.run('post-process', async () => {
@@ -88,22 +91,16 @@ export const generateCreative = inngest.createFunction(
       return Array.from(processed)
     })
 
-    const r2Result = await step.run('upload-to-r2', async () => {
+    const uploadResult = await step.run('upload', async () => {
       const buf = Buffer.from(processedBuffer)
-      const key = `creatives/${creativeId}/${nanoid()}.jpg`
-      await r2.send(new PutObjectCommand({
-        Bucket: R2_BUCKET,
-        Key: key,
-        Body: buf,
-        ContentType: 'image/jpeg',
-      }))
-      return { key, url: `${R2_PUBLIC_URL}/${key}` }
+      const key = `${creativeId}/${nanoid()}.jpg`
+      return uploadAsset(buf, key, 'image/jpeg')
     })
 
     await step.run('mark-completed', async () => {
       await prisma.creative.update({
         where: { id: creativeId },
-        data: { status: 'COMPLETED', url: r2Result.url, key: r2Result.key },
+        data: { status: 'COMPLETED', url: uploadResult.url, key: uploadResult.key },
       })
     })
   }
