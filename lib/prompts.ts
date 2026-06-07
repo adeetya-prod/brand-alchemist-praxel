@@ -1,4 +1,5 @@
 import type { Brand, CreativeFormat } from "@prisma/client";
+import { nearestColourName } from "./colour-names";
 
 const FORMAT_CONTEXT: Record<CreativeFormat, string> = {
   INSTAGRAM_SQUARE:
@@ -20,12 +21,41 @@ const FORMAT_SIZE: Record<CreativeFormat, string> = {
 
 export function buildBrandSystemContext(brand: Brand): string {
   const parts: string[] = []
-  if (brand.primaryColor) parts.push(`Brand primary color: ${brand.primaryColor}.`)
-  if (brand.secondaryColor) parts.push(`Secondary color: ${brand.secondaryColor}.`)
-  if (brand.accentColor) parts.push(`Accent color: ${brand.accentColor}.`)
-  if (parts.length > 0) parts.push('Use ONLY these colors. Do not introduce colors not listed above.')
+
+  if (brand.primaryColor) {
+    const name = nearestColourName(brand.primaryColor)
+    parts.push(`Brand primary color (dominant element): ${name} (${brand.primaryColor}).`)
+  }
+  if (brand.secondaryColor) {
+    const name = nearestColourName(brand.secondaryColor)
+    parts.push(`Secondary color (supporting surfaces): ${name} (${brand.secondaryColor}).`)
+  }
+  if (brand.accentColor) {
+    const name = nearestColourName(brand.accentColor)
+    parts.push(`Accent color (highlights and interactive elements): ${name} (${brand.accentColor}).`)
+  }
+  if (parts.length > 0) {
+    parts.push('Use ONLY these colors. Do not introduce colors not listed above.')
+  }
+
   if (brand.tone.length > 0) parts.push(`Brand tone: ${brand.tone.join(', ')}.`)
-  if (brand.voiceGuide) parts.push(`Brand mood: ${brand.voiceGuide.slice(0, 150)}.`)
+
+  if (brand.voiceGuide) {
+    let guide = brand.voiceGuide
+    if (guide.length > 400) {
+      const cut = guide.lastIndexOf('.', 400)
+      guide = cut > 0 ? guide.slice(0, cut + 1) : guide.slice(0, 400)
+    }
+    parts.push(`Brand mood: ${guide}`)
+  }
+
+  if (brand.tagline) parts.push(`Brand tagline: ${brand.tagline}.`)
+
+  const font = brand.fontHeading ?? 'clean sans-serif'
+  parts.push(
+    `Brand typography: ${font} (heading). Reflect the typographic mood in composition — do not render text.`
+  )
+
   return parts.join(' ')
 }
 

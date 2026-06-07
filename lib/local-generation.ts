@@ -1,23 +1,9 @@
 import { prisma } from './prisma'
 import { openaiImages } from './openai'
 import { uploadAsset } from './storage'
-import sharp from 'sharp'
+import { composeCreative, GENERATE_SIZES } from './image-processing'
 import { nanoid } from 'nanoid'
 import type { CreativeFormat } from '@prisma/client'
-
-const GENERATE_SIZES: Record<CreativeFormat, { width: number; height: number }> = {
-  INSTAGRAM_SQUARE: { width: 1088, height: 1088 },
-  INSTAGRAM_STORY:  { width: 1088, height: 1920 },
-  LINKEDIN_POST:    { width: 1200, height: 624  },
-  LINKEDIN_BANNER:  { width: 1584, height: 528  },
-}
-
-const FINAL_SIZES: Record<CreativeFormat, { width: number; height: number }> = {
-  INSTAGRAM_SQUARE: { width: 1080, height: 1080 },
-  INSTAGRAM_STORY:  { width: 1080, height: 1920 },
-  LINKEDIN_POST:    { width: 1200, height: 628  },
-  LINKEDIN_BANNER:  { width: 1584, height: 528  },
-}
 
 // Free fallback: Pollinations.ai — no API key required
 async function generateViaPollinations(prompt: string, width: number, height: number): Promise<Buffer> {
@@ -30,6 +16,13 @@ async function generateViaPollinations(prompt: string, width: number, height: nu
 export async function runLocalGeneration(creativeId: string, format: CreativeFormat, prompt: string) {
   try {
     await prisma.creative.update({ where: { id: creativeId }, data: { status: 'PROCESSING' } })
+
+    // Fetch brand identity and CTA label for compositing
+    const creative = await prisma.creative.findUniqueOrThrow({
+      where: { id: creativeId },
+      select: { ctaLabel: true, brandId: true },
+    })
+    const brand = await prisma.brand.findUniqueOrThrow({ where: { id: creative.brandId } })
 
     const { width, height } = GENERATE_SIZES[format]
     let rawBuffer: Buffer
@@ -52,16 +45,12 @@ export async function runLocalGeneration(creativeId: string, format: CreativeFor
       rawBuffer = await generateViaPollinations(prompt, width, height)
     }
 
-    let pipeline = sharp(rawBuffer)
-    const final = FINAL_SIZES[format]
-    const gen = GENERATE_SIZES[format]
-
-    if (format === 'LINKEDIN_POST') {
-      pipeline = pipeline.extend({ top: 2, bottom: 2, left: 0, right: 0, background: { r: 255, g: 255, b: 255, alpha: 1 } })
-    } else if (gen.width !== final.width || gen.height !== final.height) {
-      pipeline = pipeline.resize(final.width, final.height, { fit: 'cover', position: 'center' })
-    }
-    const processed = await pipeline.jpeg({ quality: 95 }).toBuffer()
+    const processed = await composeCreative(
+      rawBuffer,
+      format,
+      { primaryColor: brand.primaryColor, logoUrl: brand.logoUrl, fontHeading: brand.fontHeading },
+      creative.ctaLabel,
+    )
 
     const key = `creatives/${creativeId}/${nanoid()}.jpg`
     const { url } = await uploadAsset(processed, key, 'image/jpeg')

@@ -2,23 +2,9 @@ import { inngest } from '@/lib/inngest'
 import { openaiImages } from '@/lib/openai'
 import { prisma } from '@/lib/prisma'
 import { uploadAsset } from '@/lib/storage'
+import { composeCreative, GENERATE_SIZES } from '@/lib/image-processing'
 import { nanoid } from 'nanoid'
-import sharp from 'sharp'
 import type { CreativeFormat } from '@prisma/client'
-
-const GENERATE_SIZES: Record<CreativeFormat, { width: number; height: number }> = {
-  INSTAGRAM_SQUARE: { width: 1088, height: 1088 },
-  INSTAGRAM_STORY:  { width: 1088, height: 1920 },
-  LINKEDIN_POST:    { width: 1200, height: 624  },
-  LINKEDIN_BANNER:  { width: 1584, height: 528  },
-}
-
-const FINAL_SIZES: Record<CreativeFormat, { width: number; height: number }> = {
-  INSTAGRAM_SQUARE: { width: 1080, height: 1080 },
-  INSTAGRAM_STORY:  { width: 1080, height: 1920 },
-  LINKEDIN_POST:    { width: 1200, height: 628  },
-  LINKEDIN_BANNER:  { width: 1584, height: 528  },
-}
 
 async function generateImage(prompt: string, format: CreativeFormat): Promise<Buffer> {
   const { width, height } = GENERATE_SIZES[format]
@@ -43,24 +29,6 @@ async function generateImage(prompt: string, format: CreativeFormat): Promise<Bu
   return Buffer.from(await res.arrayBuffer())
 }
 
-async function postProcess(buffer: Buffer, format: CreativeFormat): Promise<Buffer> {
-  const { width, height } = FINAL_SIZES[format]
-  const gen = GENERATE_SIZES[format]
-
-  let pipeline = sharp(buffer)
-
-  if (format === 'LINKEDIN_POST') {
-    pipeline = pipeline.extend({
-      top: 2, bottom: 2, left: 0, right: 0,
-      background: { r: 255, g: 255, b: 255, alpha: 1 },
-    })
-  } else if (gen.width !== width || gen.height !== height) {
-    pipeline = pipeline.resize(width, height, { fit: 'cover', position: 'center' })
-  }
-
-  return pipeline.jpeg({ quality: 95 }).toBuffer()
-}
-
 export const generateCreative = inngest.createFunction(
   {
     id: 'generate-creative',
@@ -74,10 +42,24 @@ export const generateCreative = inngest.createFunction(
     },
   },
   async ({ event, step }: { event: any; step: any }) => {
-    const { creativeId, format, prompt } = event.data
+    const { creativeId, brandId, format, prompt } = event.data
 
     await step.run('mark-processing', async () => {
       await prisma.creative.update({ where: { id: creativeId }, data: { status: 'PROCESSING' } })
+    })
+
+    // Fetch brand identity and CTA label for compositing
+    const compositeData = await step.run('fetch-brand-data', async () => {
+      const [brand, creative] = await Promise.all([
+        prisma.brand.findUniqueOrThrow({ where: { id: brandId } }),
+        prisma.creative.findUniqueOrThrow({ where: { id: creativeId }, select: { ctaLabel: true } }),
+      ])
+      return {
+        primaryColor: brand.primaryColor,
+        logoUrl: brand.logoUrl,
+        fontHeading: brand.fontHeading,
+        ctaLabel: creative.ctaLabel,
+      }
     })
 
     const imageBuffer = await step.run('generate-image', async () => {
@@ -87,7 +69,7 @@ export const generateCreative = inngest.createFunction(
 
     const processedBuffer = await step.run('post-process', async () => {
       const buf = Buffer.from(imageBuffer)
-      const processed = await postProcess(buf, format as CreativeFormat)
+      const processed = await composeCreative(buf, format as CreativeFormat, compositeData, compositeData.ctaLabel)
       return Array.from(processed)
     })
 
